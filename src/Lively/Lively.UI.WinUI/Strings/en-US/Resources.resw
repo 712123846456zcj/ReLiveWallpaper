@@ -1358,4 +1358,61 @@ If still not working, close &amp; start Lively again/restart windows.
   <data name="NewFolder.Text" xml:space="preserve">
     <value>New folder...</value>
   </data>
+  <data name="AddWallpaperCollage.Header" xml:space="preserve">
+    <value>Photo collage</value>
+  </data>
+  <data name="AddWallpaperCollage.Description" xml:space="preserve">
+    <value>Combine multiple pictures into one wallpaper</value>
+  </data>
+  <data name="TitleCollage" xml:space="preserve">
+    <value>Photo collage</value>
+  </data>
+  <data name="CollageImages.Text" xml:space="preserve">
+    <value>Pictures</value>
+  </data>
+  <data name="CollageAddImages.Content" xml:space="preserve">
+    <value>Add pictures</value>
+  </data>
+  <data name="CollageEmpty.Text" xml:space="preserve">
+    <value>Select at least two pictures, they are combined in the order listed here.</value>
+  </data>
+  <data name="CollageLayout.Text" xml:space="preserve">
+    <value>Direction</value>
+  </data>
+  <data name="CollageLayoutHorizontal.Content" xml:space="preserve">
+    <value>Horizontal</value>
+  </data>
+  <data name="CollageLayoutVertical.Content" xml:space="preserve">
+    <value>Vertical</value>
+  </data>
+  <data name="CollageFit.Text" xml:space="preserve">
+    <value>Fill mode</value>
+  </data>
+  <data name="CollageFitCrop.Content" xml:space="preserve">
+    <value>Crop to fill</value>
+  </data>
+  <data name="CollageFitContain.Content" xml:space="preserve">
+    <value>Fit inside</value>
+  </data>
+  <data name="CollageGap.Text" xml:space="preserve">
+    <value>Spacing</value>
+  </data>
+  <data name="CollageHint.Text" xml:space="preserve">
+    <value>The collage is created at the resolution of the primary screen.</value>
+  </data>
+  <data name="CollageCreate.Content" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="CollageDesc.Text" xml:space="preserve">
+    <value>Collage of {0} pictures</value>
+  </data>
+  <data name="CollageMoveUp.Text" xml:space="preserve">
+    <value>Move up</value>
+  </data>
+  <data name="CollageMoveDown.Text" xml:space="preserve">
+    <value>Move down</value>
+  </data>
+  <data name="CollageRemove.Text" xml:space="preserve">
+    <value>Remove</value>
+  </data>
 </root>

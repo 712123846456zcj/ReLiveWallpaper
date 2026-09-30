@@ -18,6 +18,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\AddWallpaperCreateViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\AddWallpaperDataViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\AddWallpaperViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\CollageImageViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\CollageWallpaperViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\AppUpdateViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ChooseDisplayViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ControlPanel\ControlPanelViewModel.cs" />

@@ -86,6 +86,7 @@
     <None Remove="Views\Pages\AddWallpaperDataView.xaml" />
     <None Remove="Views\Pages\AddWallpaperView.xaml" />
     <None Remove="Views\Pages\AppThemeView.xaml" />
+    <None Remove="Views\Pages\CollageWallpaperView.xaml" />
     <None Remove="Views\Pages\AppUpdateView.xaml" />
     <None Remove="Views\Pages\ChooseDisplayView.xaml" />
     <None Remove="Views\Pages\ControlPanelView.xaml" />
@@ -368,6 +369,9 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Pages\AddWallpaperView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Pages\CollageWallpaperView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\Pages\FavoritesView.xaml">

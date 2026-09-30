@@ -1362,4 +1362,61 @@ Grid 网格：利用网格算法更精准地确定暂停时机</value>
   <data name="NewFolder.Text" xml:space="preserve">
     <value>新建文件夹…</value>
   </data>
+  <data name="AddWallpaperCollage.Header" xml:space="preserve">
+    <value>多图拼接</value>
+  </data>
+  <data name="AddWallpaperCollage.Description" xml:space="preserve">
+    <value>把多张图片拼接成一张壁纸</value>
+  </data>
+  <data name="TitleCollage" xml:space="preserve">
+    <value>多图拼接</value>
+  </data>
+  <data name="CollageImages.Text" xml:space="preserve">
+    <value>图片</value>
+  </data>
+  <data name="CollageAddImages.Content" xml:space="preserve">
+    <value>添加图片</value>
+  </data>
+  <data name="CollageEmpty.Text" xml:space="preserve">
+    <value>至少选择两张图片，按这里的顺序依次拼接。</value>
+  </data>
+  <data name="CollageLayout.Text" xml:space="preserve">
+    <value>拼接方向</value>
+  </data>
+  <data name="CollageLayoutHorizontal.Content" xml:space="preserve">
+    <value>水平</value>
+  </data>
+  <data name="CollageLayoutVertical.Content" xml:space="preserve">
+    <value>垂直</value>
+  </data>
+  <data name="CollageFit.Text" xml:space="preserve">
+    <value>填充方式</value>
+  </data>
+  <data name="CollageFitCrop.Content" xml:space="preserve">
+    <value>裁剪填满</value>
+  </data>
+  <data name="CollageFitContain.Content" xml:space="preserve">
+    <value>完整放入</value>
+  </data>
+  <data name="CollageGap.Text" xml:space="preserve">
+    <value>间距</value>
+  </data>
+  <data name="CollageHint.Text" xml:space="preserve">
+    <value>成品尺寸为主显示器的分辨率。</value>
+  </data>
+  <data name="CollageCreate.Content" xml:space="preserve">
+    <value>创建</value>
+  </data>
+  <data name="CollageDesc.Text" xml:space="preserve">
+    <value>{0} 张图片拼接</value>
+  </data>
+  <data name="CollageMoveUp.Text" xml:space="preserve">
+    <value>上移</value>
+  </data>
+  <data name="CollageMoveDown.Text" xml:space="preserve">
+    <value>下移</value>
+  </data>
+  <data name="CollageRemove.Text" xml:space="preserve">
+    <value>移除</value>
+  </data>
 </root>

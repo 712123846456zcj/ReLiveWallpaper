@@ -342,6 +342,13 @@ namespace Lively.UI.Shared.ViewModels
                         }
                     }
                     break;
+                case WallpaperAddType.collage:
+                    {
+                        var model = await dialogService.ShowCollageWallpaperDialogAsync();
+                        if (model != null)
+                            navigator.NavigateTo(ContentPageType.library);
+                    }
+                    break;
                 case WallpaperAddType.create:
                     {
                         await CreateWallpaper(null);

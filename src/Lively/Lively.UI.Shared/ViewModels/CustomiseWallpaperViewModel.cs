@@ -271,24 +271,9 @@ namespace Lively.UI.Shared.ViewModels
                 var dataFolder = Path.Combine(userSettings.Settings.WallpaperDir, Constants.CommonPartialPaths.WallpaperSettingsDir);
                 //Create a directory with the wallpaper foldername in SaveData/wpdata/, copy livelyproperties.json into this.
                 //Further modifications are done to the copy file.
-                string wallpaperDataDirectoryPath = null;
-                switch (arrangement)
-                {
-                    case WallpaperArrangement.per:
-                        wallpaperDataDirectoryPath = Path.Combine(dataFolder, new DirectoryInfo(obj.LivelyInfoFolderPath).Name, wallpaperScreen.Index.ToString());
-                        break;
-                    case WallpaperArrangement.span:
-                        wallpaperDataDirectoryPath = Path.Combine(dataFolder, new DirectoryInfo(obj.LivelyInfoFolderPath).Name, "span");
-                        break;
-                    case WallpaperArrangement.duplicate:
-                        wallpaperDataDirectoryPath = Path.Combine(dataFolder, new DirectoryInfo(obj.LivelyInfoFolderPath).Name, "duplicate");
-                        break;
-                }
-                Directory.CreateDirectory(wallpaperDataDirectoryPath);
-                //copy the original file if not found..
-                propertyCopyPath = Path.Combine(wallpaperDataDirectoryPath, "LivelyProperties.json");
-                if (!File.Exists(propertyCopyPath))
-                    File.Copy(obj.LivelyPropertyPath, propertyCopyPath);
+                var wallpaperDataDirectoryPath = LivelyPropertyUtil.GetPropertyCopyPath(dataFolder, new DirectoryInfo(obj.LivelyInfoFolderPath).Name, arrangement, wallpaperScreen.Index);
+                //copy the original file if not found, otherwise add properties the app gained since the copy was created.
+                propertyCopyPath = LivelyPropertyUtil.SyncPropertyFile(obj.LivelyPropertyPath, wallpaperDataDirectoryPath);
             }
             else if (items.Count() == 1)
             {

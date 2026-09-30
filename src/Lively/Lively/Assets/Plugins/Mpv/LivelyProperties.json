@@ -60,6 +60,18 @@
       "Uniform Fill"
     ]
   },
+  "backgroundColor": {
+    "type": "color",
+    "value": "#000000",
+    "text": "Background color",
+    "help": "Fills the area around the media, useful when the aspect ratio does not match the screen."
+  },
+  "backgroundColorAuto": {
+    "type": "checkbox",
+    "value": true,
+    "text": "Sample background from media",
+    "help": "Fills the background with the average color of the picture."
+  },
    "mute": {
     "type": "checkbox",
     "value": false,

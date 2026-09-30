@@ -39,8 +39,19 @@ namespace Lively.Core.Wallpapers
             public List<object> Command { get; } = new List<object>();
         }
 
+        /// <summary>
+        /// Background fill controls are handled by this player, mpv has no matching properties.
+        /// </summary>
+        private const string BackgroundColorProperty = "backgroundColor";
+        private const string BackgroundAutoProperty = "backgroundColorAuto";
+        private const string DefaultBackgroundColor = "#000000";
+
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         private readonly CancellationTokenSource ctsProcessWait = new();
+        private string userBackgroundColor = DefaultBackgroundColor;
+        private bool isBackgroundAuto = true;
+        private string sampledBackgroundColor;
+        private bool isBackgroundColorSampled;
         private Task<IntPtr> processWaitTask;
         private readonly Process process;
         private readonly int timeOut;
@@ -119,6 +130,8 @@ namespace Lively.Core.Wallpapers
             cmdArgs.Append("--input-ipc-server=" + ipcServerName + " ");
             // Integer scaler for sharpness
             cmdArgs.Append(model.LivelyInfo.Type == WallpaperType.gif ? "--scale=nearest " : " ");
+            // Paint the area not covered by the media with --background-color instead of leaving it black.
+            cmdArgs.Append("--background=color ");
             // GPU decode preference
             cmdArgs.Append(isHwAccel ? "--hwdec=auto-safe " : "--hwdec=no ");
             // Select which metadata to use for the --target-colorspace-hint, requires gpu-next vo.
@@ -226,6 +239,9 @@ namespace Lively.Core.Wallpapers
             {
                 LivelyPropertyUtil.LoadProperty(propertyPath, (control) =>
                 {
+                    if (TryApplyBackgroundProperty(control))
+                        return;
+
                     switch (control)
                     {
                         case SliderModel sliderModel:
@@ -417,6 +433,8 @@ namespace Lively.Core.Wallpapers
                     case MessageType.lp_chekbox:
                         {
                             var chk = (LivelyCheckbox)obj;
+                            if (TryApplyBackgroundProperty(chk.Name, chk.Value))
+                                break;
                             msg = GetMpvCommand("set_property", chk.Name, chk.Value);
                         }
                         break;
@@ -437,7 +455,10 @@ namespace Lively.Core.Wallpapers
                         //todo
                         break;
                     case MessageType.lp_cpicker:
-                        //todo
+                        {
+                            var picker = (LivelyColorPicker)obj;
+                            TryApplyBackgroundProperty(picker.Name, picker.Value);
+                        }
                         break;
                     case MessageType.lp_fdropdown:
                         //todo
@@ -467,6 +488,76 @@ namespace Lively.Core.Wallpapers
         {
             // Process object is disposed in Exit event.
             Terminate();
+        }
+
+        /// <summary>
+        /// Applies the background fill controls, they are not mpv properties and are resolved here.
+        /// </summary>
+        /// <returns>True when the control was consumed by the player.</returns>
+        private bool TryApplyBackgroundProperty(ControlModel control) => TryApplyBackgroundProperty(control.Name, control switch
+        {
+            ColorPickerModel colorPicker => colorPicker.Value,
+            CheckboxModel checkbox => checkbox.Value,
+            _ => null,
+        });
+
+        private bool TryApplyBackgroundProperty(string name, object value)
+        {
+            switch (name)
+            {
+                case BackgroundColorProperty:
+                    userBackgroundColor = value as string ?? DefaultBackgroundColor;
+                    break;
+                case BackgroundAutoProperty:
+                    isBackgroundAuto = value is true;
+                    break;
+                default:
+                    return false;
+            }
+
+            UpdateBackgroundColor();
+            return true;
+        }
+
+        /// <summary>
+        /// Paints the area not covered by the media, black by default.
+        /// </summary>
+        private void UpdateBackgroundColor()
+        {
+            var color = isBackgroundAuto ? GetSampledBackgroundColor() ?? userBackgroundColor : userBackgroundColor;
+            SendMessage(GetMpvCommand("set_property", "background-color",
+                string.IsNullOrWhiteSpace(color) ? DefaultBackgroundColor : color));
+        }
+
+        /// <summary>
+        /// Average color of the picture, sampled once, null for media it makes no sense for.
+        /// </summary>
+        private string GetSampledBackgroundColor()
+        {
+            if (isBackgroundColorSampled)
+                return sampledBackgroundColor;
+
+            isBackgroundColorSampled = true;
+            if (Category is not (WallpaperType.picture or WallpaperType.gif))
+                return null;
+
+            try
+            {
+                using var image = new MagickImage(Model.FilePath);
+                image.HasAlpha = false;
+                // Downscaling to a single pixel is the average color of the image.
+                image.Resize(new MagickGeometry(1, 1) { IgnoreAspectRatio = true });
+                // Read the pixel through the collection, the byte format respects the source bit depth.
+                var rgb = image.GetPixels().ToByteArray(0, 0, 1, 1, "RGB");
+                if (rgb.Length >= 3)
+                    sampledBackgroundColor = $"#{rgb[0]:X2}{rgb[1]:X2}{rgb[2]:X2}";
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"Mpv{uniqueId}: Failed to sample the background color: {e.Message}");
+            }
+
+            return sampledBackgroundColor;
         }
 
         // Ref: https://github.com/rocksdanister/lively/issues/2194

@@ -122,6 +122,19 @@
             </controls:SettingsExpander>
 
             <controls:SettingsCard
+                x:Uid="AddWallpaperCollage"
+                Margin="0,2.5,0,0"
+                Command="{Binding CollageCommand}"
+                IsClickEnabled="True">
+                <controls:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE91B;" />
+                </controls:SettingsCard.HeaderIcon>
+                <controls:SettingsCard.ActionIcon>
+                    <FontIcon Glyph="&#xE76C;" />
+                </controls:SettingsCard.ActionIcon>
+            </controls:SettingsCard>
+
+            <controls:SettingsCard
                 x:Uid="AddWallpaperAdvanced"
                 Margin="0,2.5,0,0"
                 Command="{Binding CreateWallpaperCommand}"

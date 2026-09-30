@@ -1,6 +1,8 @@
 ﻿using Lively.Common.JsonConverters;
+using Lively.Models.Enums;
 using Lively.Models.LivelyControls;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -129,6 +131,88 @@ namespace Lively.Common.Helpers
                 control.Help = string.IsNullOrWhiteSpace(value.Help) ? control.Help : value.Help;
             }
         }
+
+        /// <summary>
+        /// Path of the user editable copy of a wallpaper properties file.
+        /// </summary>
+        public static string GetPropertyCopyPath(string wallpaperSettingsDir, string wallpaperFolderName, WallpaperArrangement arrangement, int displayIndex)
+        {
+            return arrangement switch
+            {
+                WallpaperArrangement.per => Path.Combine(wallpaperSettingsDir, wallpaperFolderName, displayIndex.ToString()),
+                WallpaperArrangement.span => Path.Combine(wallpaperSettingsDir, wallpaperFolderName, "span"),
+                WallpaperArrangement.duplicate => Path.Combine(wallpaperSettingsDir, wallpaperFolderName, "duplicate"),
+                _ => null,
+            };
+        }
+
+        /// <summary>
+        /// Creates the user editable copy of a properties file inside the given directory, or merges in the
+        /// entries an existing copy is missing. Values already stored in the copy are never overwritten.
+        /// </summary>
+        /// <returns>Path of the copy file, null when it does not exist.</returns>
+        public static string SyncPropertyFile(string sourcePath, string destinationDirectoryPath, string fileName = "LivelyProperties.json")
+        {
+            var destinationPath = string.IsNullOrEmpty(destinationDirectoryPath) ? null : Path.Combine(destinationDirectoryPath, fileName);
+            try
+            {
+                if (string.IsNullOrEmpty(sourcePath) || string.IsNullOrEmpty(destinationPath) || !File.Exists(sourcePath))
+                    return null;
+
+                if (!File.Exists(destinationPath))
+                {
+                    Directory.CreateDirectory(destinationDirectoryPath);
+                    File.Copy(sourcePath, destinationPath);
+                    return destinationPath;
+                }
+
+                var source = JObject.Parse(File.ReadAllText(sourcePath));
+                var destination = JObject.Parse(File.ReadAllText(destinationPath));
+                // Null when the copy is already up to date.
+                var merged = MergeEntries(source, destination);
+                if (merged is not null)
+                    File.WriteAllText(destinationPath, merged.ToString(Formatting.Indented));
+            }
+            catch { /* Properties file related issue, not fatal. */ }
+
+            return File.Exists(destinationPath) ? destinationPath : null;
+        }
+
+        /// <summary>
+        /// Adds the entries of source the destination is missing, values the destination already has are kept.
+        /// The source order is used, arrays and values are not merged.
+        /// </summary>
+        /// <returns>Null when the destination is already up to date.</returns>
+        private static JObject MergeEntries(JObject source, JObject destination)
+        {
+            var merged = new JObject();
+            foreach (var property in source)
+            {
+                if (!destination.TryGetValue(property.Key, out var existing))
+                {
+                    merged.Add(property.Key, property.Value?.DeepClone());
+                    continue;
+                }
+
+                var value = property.Value is JObject sourceChild && existing is JObject destinationChild ?
+                    (JToken)(MergeEntries(sourceChild, destinationChild) ?? existing) : existing;
+                merged.Add(property.Key, value.DeepClone());
+            }
+
+            // Entries the source does not know about are kept.
+            foreach (var property in destination)
+            {
+                if (!merged.ContainsKey(property.Key))
+                    merged.Add(property.Key, property.Value?.DeepClone());
+            }
+
+            return IsIdentical(merged, destination) ? null : merged;
+        }
+
+        private static bool IsIdentical(JObject left, JObject right) =>
+            left.Count == right.Count &&
+            left.Properties().Select(x => x.Name).SequenceEqual(right.Properties().Select(x => x.Name)) &&
+            JToken.DeepEquals(left, right);
 
         private static string GetFolderDropdownValue(FolderDropdownModel fd, string rootPath)
         {

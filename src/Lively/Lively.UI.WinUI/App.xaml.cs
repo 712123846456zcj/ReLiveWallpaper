@@ -174,6 +174,7 @@ namespace Lively.UI.WinUI
                 .AddTransient<RestoreWallpaperViewModel>()
                 .AddTransient<AddWallpaperCreateViewModel>()
                 .AddTransient<DepthEstimateWallpaperViewModel>()
+                .AddTransient<CollageWallpaperViewModel>()
                 .AddTransient<SettingsGeneralViewModel>()
                 .AddTransient<SettingsPerformanceViewModel>()
                 .AddTransient<SettingsWallpaperViewModel>()

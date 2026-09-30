@@ -43,6 +43,12 @@ namespace Lively.Common.Services
         /// <param name="coverImage">Existing cover image, for editing.</param>
         /// <returns>Null when cancelled.</returns>
         Task<(string name, string coverImage)?> ShowLibraryFolderDialogAsync(string title, string name = null, string coverImage = null);
+
+        /// <summary>
+        /// Combines multiple pictures into a single picture wallpaper.
+        /// </summary>
+        /// <returns>The wallpaper created, null when cancelled.</returns>
+        Task<LibraryModel> ShowCollageWallpaperDialogAsync();
         Task<WallpaperCreateType?> ShowWallpaperCreateDialogAsync();
         Task<bool> ShowWallpaperProjectDirectoryDialogAsync(string folderPath);
         Task<IEnumerable<GalleryModel>> ShowGalleryRestoreWallpaperDialogAsync(IEnumerable<WallpaperDto> wallpapers);
@@ -62,6 +68,7 @@ namespace Lively.Common.Services
         url,
         files,
         create,
+        collage,
         none
     }
 }

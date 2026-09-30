@@ -1,6 +1,7 @@
 ﻿using Lively.Common;
 using Lively.Common.Extensions;
 using Lively.Common.Factories;
+using Lively.Common.Helpers;
 using Lively.Common.Helpers.Archive;
 using Lively.Common.Helpers.Files;
 using Lively.Common.Services;
@@ -31,6 +32,8 @@ namespace Lively
             CleanTempFiles();
             CreateRequiredDirectories();
             SetupWallpaperDirectories();
+            // Kept in sync every launch, it is the template new media wallpapers copy their editable properties from.
+            SetupWallpaperDefaults();
             HandleFirstRunOrUpdate(true);
         }
 
@@ -90,7 +93,6 @@ namespace Lively
                 }
 
                 InstallWallpaperBundles();
-                SetupWallpaperDefaults();
                 MigrateFromOlderVersions();
 
                 spl?.Close();
@@ -123,10 +125,8 @@ namespace Lively
                 var livelyPropertyPath = Path.Combine(assetDir, "LivelyProperties.json");
                 var livelyPropertyLocPath = Path.Combine(assetDir, "LivelyProperties.loc.json");
 
-                if (File.Exists(livelyPropertyPath))
-                    File.Copy(livelyPropertyPath, Path.Combine(Constants.CommonPaths.TempVideoDir, "LivelyProperties.json"), true);
-                if (File.Exists(livelyPropertyLocPath))
-                    File.Copy(livelyPropertyLocPath, Path.Combine(Constants.CommonPaths.TempVideoDir, "LivelyProperties.loc.json"), true);
+                LivelyPropertyUtil.SyncPropertyFile(livelyPropertyPath, Constants.CommonPaths.TempVideoDir);
+                LivelyPropertyUtil.SyncPropertyFile(livelyPropertyLocPath, Constants.CommonPaths.TempVideoDir, "LivelyProperties.loc.json");
             }
             catch { /* Nothing to do */ }
         }

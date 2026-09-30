@@ -230,8 +230,41 @@ namespace Lively.UI.WinUI.Services
                 result = (WallpaperAddType.create, null);
                 addDialog.Hide();
             };
+            addVm.OnRequestCollage += (_, _) =>
+            {
+                result = (WallpaperAddType.collage, null);
+                addDialog.Hide();
+            };
             await addDialog.ShowAsyncQueue();
             return result;
+        }
+
+        public async Task<LibraryModel> ShowCollageWallpaperDialogAsync()
+        {
+            var vm = App.Services.GetRequiredService<CollageWallpaperViewModel>();
+            var dlg = new ContentDialog()
+            {
+                Title = i18n.GetString("TitleCollage"),
+                Content = new CollageWallpaperView(vm),
+                PrimaryButtonText = i18n.GetString("CollageCreate/Content"),
+                SecondaryButtonText = i18n.GetString("Cancel/Content"),
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = App.Services.GetRequiredService<MainWindow>().Content.XamlRoot,
+                PrimaryButtonCommand = vm.CreateCommand,
+                IsPrimaryButtonEnabled = vm.CanCreate,
+            };
+            //binding canExecute not working
+            vm.CreateCommand.CanExecuteChanged += (_, _) => dlg.IsPrimaryButtonEnabled = vm.CreateCommand.CanExecute(null);
+            vm.OnRequestClose += (_, _) => dlg.Hide();
+            dlg.Closing += (s, e) =>
+            {
+                //Keep the dialog open while the collage is being written.
+                if (vm.IsRunning && e.Result != ContentDialogResult.Primary)
+                    e.Cancel = true;
+            };
+
+            await dlg.ShowAsyncQueue();
+            return vm.NewWallpaper;
         }
 
         public async Task<WallpaperCreateType?> ShowWallpaperCreateDialogAsync(string filePath)
@@ -286,7 +319,7 @@ namespace Lively.UI.WinUI.Services
                 Title = title,
                 Content = new FolderEditView(vm),
                 // Editing an existing folder or creating a new one.
-                PrimaryButtonText = string.IsNullOrEmpty(name) ? i18n.GetString("FolderCreate.Content") : i18n.GetString("TextSave.Content"),
+                PrimaryButtonText = string.IsNullOrEmpty(name) ? i18n.GetString("FolderCreate/Content") : i18n.GetString("TextSave/Content"),
                 SecondaryButtonText = i18n.GetString("Cancel/Content"),
                 DefaultButton = ContentDialogButton.Primary,
                 IsPrimaryButtonEnabled = vm.CanSave,

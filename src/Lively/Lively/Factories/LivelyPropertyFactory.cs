@@ -1,4 +1,5 @@
 ﻿using Lively.Common;
+using Lively.Common.Helpers;
 using Lively.Common.Services;
 using Lively.Models;
 using Lively.Models.Enums;
@@ -15,29 +16,14 @@ namespace Lively.Factories
                 return null;
 
             string propertyCopyPath = null;
-            var dataFolder = Path.Combine(userSettings.Settings.WallpaperDir, Constants.CommonPartialPaths.WallpaperSettingsDir);
             try
             {
                 // Create a directory with the wallpaper foldername in SaveData/wpdata/, copy livelyproperties.json into this.
                 // Further modifications are done to the copy file.
-                string wallpaperDataDirectoryPath = null;
-                switch (arrangement)
-                {
-                    case WallpaperArrangement.per:
-                        wallpaperDataDirectoryPath = Path.Combine(dataFolder, new DirectoryInfo(model.LivelyInfoFolderPath).Name, display.Index.ToString());
-                        break;
-                    case WallpaperArrangement.span:
-                        wallpaperDataDirectoryPath = Path.Combine(dataFolder, new DirectoryInfo(model.LivelyInfoFolderPath).Name, "span");
-                        break;
-                    case WallpaperArrangement.duplicate:
-                        wallpaperDataDirectoryPath = Path.Combine(dataFolder, new DirectoryInfo(model.LivelyInfoFolderPath).Name, "duplicate");
-                        break;
-                }
-                Directory.CreateDirectory(wallpaperDataDirectoryPath);
-                // Copy the original file if not found..
-                propertyCopyPath = Path.Combine(wallpaperDataDirectoryPath, "LivelyProperties.json");
-                if (!File.Exists(propertyCopyPath))
-                    File.Copy(model.LivelyPropertyPath, propertyCopyPath);
+                var dataFolder = Path.Combine(userSettings.Settings.WallpaperDir, Constants.CommonPartialPaths.WallpaperSettingsDir);
+                var wallpaperDataDirectoryPath = LivelyPropertyUtil.GetPropertyCopyPath(dataFolder, new DirectoryInfo(model.LivelyInfoFolderPath).Name, arrangement, display.Index);
+                // Copy the original file if not found, otherwise add properties the app gained since the copy was created.
+                propertyCopyPath = LivelyPropertyUtil.SyncPropertyFile(model.LivelyPropertyPath, wallpaperDataDirectoryPath);
             }
             catch { /* Ignore, file related issue so consider wallpaper uncustomisable. */ }
 

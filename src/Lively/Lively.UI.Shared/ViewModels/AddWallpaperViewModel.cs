@@ -18,6 +18,7 @@ namespace Lively.UI.Shared.ViewModels
         public event EventHandler<List<string>> OnRequestAddFile;
         public event EventHandler<string> OnRequestAddUrl;
         public event EventHandler OnRequestOpenCreate;
+        public event EventHandler OnRequestCollage;
 
         private readonly IUserSettingsClient userSettings;
         private readonly IDispatcherService dispatcher;
@@ -48,6 +49,9 @@ namespace Lively.UI.Shared.ViewModels
 
         private RelayCommand _browseWebCommand;
         public RelayCommand BrowseWebCommand => _browseWebCommand ??= new RelayCommand(WebBrowseAction);
+
+        private RelayCommand _collageCommand;
+        public RelayCommand CollageCommand => _collageCommand ??= new RelayCommand(() => OnRequestCollage?.Invoke(this, EventArgs.Empty));
 
         private RelayCommand _createWallpaperCommand;
         public RelayCommand CreateWallpaperCommand => _createWallpaperCommand ??= 
