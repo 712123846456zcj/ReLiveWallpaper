@@ -277,6 +277,14 @@ namespace Lively.UI.Shared.ViewModels
         }
 
         /// <summary>
+        /// Whether the core is running the wallpaper right now. Properties are only delivered to a
+        /// running wallpaper, the saved copy alone does not receive the messages.
+        /// </summary>
+        public bool IsWallpaperInUse(LibraryModel wallpaper) =>
+            wallpaper is not null && desktopCore.Wallpapers.Any(x =>
+                string.Equals(x.LivelyInfoFolderPath, wallpaper.LivelyInfoFolderPath, StringComparison.OrdinalIgnoreCase));
+
+        /// <summary>
         /// Update library selected item based on selected display.
         /// </summary>
         public void UpdateSelectedWallpaper()

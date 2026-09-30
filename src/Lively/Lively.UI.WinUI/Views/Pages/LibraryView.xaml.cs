@@ -131,7 +131,8 @@ namespace Lively.UI.WinUI.Views.Pages
                     BuildFolderMenu(selectedTile);
                     var item = sender as GridView;
                     contextMenu.ShowAt(item, e.GetPosition(item));
-                    customiseWallpaper.IsEnabled = selectedTile.LivelyPropertyPath != null;
+                    // Only the wallpaper in use can be customised, the properties are per wallpaper instance.
+                    customiseWallpaper.IsEnabled = selectedTile.LivelyPropertyPath != null && libraryVm.IsWallpaperInUse(selectedTile);
                 }
             }
             catch
@@ -149,7 +150,8 @@ namespace Lively.UI.WinUI.Views.Pages
                 selectedTile = (LibraryModel)a;
                 if (selectedTile.IsReadyToSet)
                 {
-                    customiseWallpaper.IsEnabled = selectedTile.LivelyPropertyPath != null;
+                    // Only the wallpaper in use can be customised, the properties are per wallpaper instance.
+                    customiseWallpaper.IsEnabled = selectedTile.LivelyPropertyPath != null && libraryVm.IsWallpaperInUse(selectedTile);
                     BuildFolderMenu(selectedTile);
                     contextMenu.ShowAt((UIElement)e.OriginalSource, new Point(0, 0));
                 }

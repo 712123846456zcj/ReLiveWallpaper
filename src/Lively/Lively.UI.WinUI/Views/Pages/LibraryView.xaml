@@ -267,8 +267,11 @@
                         x:Name="deleteWallpaper"
                         x:Uid="DeleteWallpaper"
                         Click="contextMenu_Click">
+                        <MenuFlyoutItem.Foreground>
+                            <SolidColorBrush Color="#E81123" />
+                        </MenuFlyoutItem.Foreground>
                         <MenuFlyoutItem.Icon>
-                            <FontIcon Glyph="&#xE74D;" />
+                            <FontIcon Glyph="&#xE74D;" Foreground="#E81123" />
                         </MenuFlyoutItem.Icon>
                     </MenuFlyoutItem>
                     <MenuFlyoutItem
