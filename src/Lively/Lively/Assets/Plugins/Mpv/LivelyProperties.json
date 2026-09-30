@@ -72,9 +72,66 @@
     "text": "Sample background from media",
     "help": "Fills the background with the average color of the picture."
   },
+  "imageTransformLabel": {
+    "type": "label",
+    "value": "Image alignment"
+  },
+  "imagePositionX": {
+    "type": "slider",
+    "max": 2000,
+    "min": -2000,
+    "tick": 200,
+    "step": 1,
+    "text": "Horizontal offset (pixels)",
+    "help": "Moves the image horizontally, positive values move it right. Ignored when the fit stretches the image to fill the screen.",
+    "value": 0
+  },
+  "imagePositionY": {
+    "type": "slider",
+    "max": 2000,
+    "min": -2000,
+    "tick": 200,
+    "step": 1,
+    "text": "Vertical offset (pixels)",
+    "help": "Moves the image vertically, positive values move it down. Ignored when the fit stretches the image to fill the screen.",
+    "value": 0
+  },
+  "imageRotation": {
+    "type": "slider",
+    "max": 180,
+    "min": 0,
+    "tick": 180,
+    "step": 1,
+    "text": "Rotation (degrees)",
+    "help": "Rotates the image, up to half a turn. Uncovered corners are filled with the background color.",
+    "value": 0
+  },
+  "imageRotationCounterClockwise": {
+    "type": "checkbox",
+    "value": false,
+    "text": "Rotate counter-clockwise",
+    "help": "Rotation direction, clockwise by default."
+  },
+  "imageFlipHorizontal": {
+    "type": "checkbox",
+    "value": false,
+    "text": "Flip horizontally",
+    "help": "Mirrors the image along the vertical axis."
+  },
+  "imageFlipVertical": {
+    "type": "checkbox",
+    "value": false,
+    "text": "Flip vertically",
+    "help": "Mirrors the image along the horizontal axis."
+  },
    "mute": {
     "type": "checkbox",
     "value": false,
     "text": "Mute"
+  },
+  "lively_default_settings_reload": {
+    "type": "button",
+    "value": "Restore default settings",
+    "help": "Resets every setting of this wallpaper."
   }
 }

@@ -20,6 +20,35 @@
         "text": "背景取图片主色调",
         "help": "使用图片的平均颜色填充背景。"
       },
+      "imageTransformLabel": { "value": "图像调整" },
+      "imagePositionX": {
+        "text": "水平位移 (px)",
+        "help": "左右移动图片，正值向右。填满（拉伸）模式下无效。"
+      },
+      "imagePositionY": {
+        "text": "垂直位移 (px)",
+        "help": "上下移动图片，正值向下。填满（拉伸）模式下无效。"
+      },
+      "imageRotation": {
+        "text": "旋转角度 (°)",
+        "help": "旋转图片，最大 180 度，旋转后露出的四角用背景颜色填充。"
+      },
+      "imageRotationCounterClockwise": {
+        "text": "逆时针旋转",
+        "help": "旋转方向，默认顺时针。"
+      },
+      "imageFlipHorizontal": {
+        "text": "水平翻转",
+        "help": "沿垂直轴镜像图片。"
+      },
+      "imageFlipVertical": {
+        "text": "垂直翻转",
+        "help": "沿水平轴镜像图片。"
+      },
+      "lively_default_settings_reload": {
+        "value": "还原默认设置",
+        "help": "重置这个壁纸的所有设置。"
+      },
       "mute": { "text": "靜音" }
     },
     "zh-Hant": {
@@ -41,6 +70,35 @@
       "backgroundColorAuto": {
         "text": "背景取圖片主色調",
         "help": "使用圖片平均顏色填充背景。"
+      },
+      "imageTransformLabel": { "value": "影像調整" },
+      "imagePositionX": {
+        "text": "水平位移 (px)",
+        "help": "左右移動圖片，正值向右。填滿（拉伸）模式下無效。"
+      },
+      "imagePositionY": {
+        "text": "垂直位移 (px)",
+        "help": "上下移動圖片，正值向下。填滿（拉伸）模式下無效。"
+      },
+      "imageRotation": {
+        "text": "旋轉角度 (°)",
+        "help": "旋轉圖片，最大 180 度，旋轉後露出的四角用背景顏色填充。"
+      },
+      "imageRotationCounterClockwise": {
+        "text": "逆時針旋轉",
+        "help": "旋轉方向，預設順時針。"
+      },
+      "imageFlipHorizontal": {
+        "text": "水平翻轉",
+        "help": "沿垂直軸鏡像圖片。"
+      },
+      "imageFlipVertical": {
+        "text": "垂直翻轉",
+        "help": "沿水平軸鏡像圖片。"
+      },
+      "lively_default_settings_reload": {
+        "value": "還原預設設定",
+        "help": "重設這個桌布的所有設定。"
       },
       "mute": { "text": "靜音" }
     },

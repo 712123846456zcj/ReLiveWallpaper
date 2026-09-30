@@ -377,9 +377,9 @@ namespace Lively.Commandline
                         if (wp == null)
                             return;
 
-                        //delimiter
-                        var tmp = opts.Param.Split("=");
-                        string name = tmp[0], val = tmp[1], ctype = null;
+                        //delimiter, buttons like lively_default_settings_reload have no value part.
+                        var tmp = opts.Param.Split(new[] { '=' }, 2);
+                        string name = tmp[0], val = tmp.Length > 1 ? tmp[1] : string.Empty, ctype = null;
                         var lp = JObject.Parse(File.ReadAllText(wp.LivelyPropertyCopyPath));
                         foreach (var item in lp)
                         {

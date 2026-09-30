@@ -19,6 +19,17 @@ namespace Lively.UI.Shared.ViewModels
 {
     public partial class CustomiseWallpaperViewModel : ObservableObject
     {
+        /// <summary>
+        /// Properties file button that resets every control, the player reloads the file afterwards.
+        /// </summary>
+        public const string RestoreDefaultsButton = "lively_default_settings_reload";
+
+        /// <summary>
+        /// Background fill controls, a picked color replaces the automatic sampling.
+        /// </summary>
+        private const string BackgroundColorControl = "backgroundColor";
+        private const string BackgroundSampleControl = "backgroundColorAuto";
+
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         private readonly IDesktopCoreClient desktopCore;
         private readonly IDisplayManagerClient displayManager;
@@ -92,6 +103,12 @@ namespace Lively.UI.Shared.ViewModels
                 return;
 
             var button = control as ButtonModel;
+            if (button.Name == RestoreDefaultsButton)
+            {
+                RestoreDefault();
+                return;
+            }
+
             WallpaperSendMsg(new LivelyButton() { Name = button.Name });
         }
 
@@ -123,6 +140,37 @@ namespace Lively.UI.Shared.ViewModels
 
             WallpaperSendMsg(new LivelyColorPicker() { Name = colorPicker.Name, Value = colorPicker.Value });
             copy.Value = colorPicker.Value;
+
+            // The automatic sampling would override the picked color.
+            if (colorPicker.Name == BackgroundColorControl)
+                DisableBackgroundSample();
+        }
+
+        /// <summary>
+        /// Turns the automatic background color sampling off so that the picked color shows.
+        /// </summary>
+        private void DisableBackgroundSample()
+        {
+            if (livelyControlsCopy is null ||
+                !livelyControlsCopy.TryGetValue(BackgroundSampleControl, out var control) ||
+                control is not CheckboxModel sample || !sample.Value)
+                return;
+
+            sample.Value = false;
+            WallpaperSendMsg(new LivelyCheckbox() { Name = BackgroundSampleControl, Value = false });
+
+            // The control model has no change notification, the item is replaced to refresh the checkbox.
+            var item = Controls?.FirstOrDefault(x => x.Name == BackgroundSampleControl);
+            if (item is null)
+                return;
+
+            Controls[Controls.IndexOf(item)] = new CheckboxModel()
+            {
+                Name = item.Name,
+                Text = item.Text,
+                Help = item.Help,
+                Value = false,
+            };
         }
 
         [RelayCommand]
@@ -204,7 +252,7 @@ namespace Lively.UI.Shared.ViewModels
             try
             {
                 File.Copy(Model.LivelyPropertyPath, currentFilePath, true);
-                WallpaperSendMsg(new LivelyButton() { Name = "lively_default_settings_reload", IsDefault = true });
+                WallpaperSendMsg(new LivelyButton() { Name = RestoreDefaultsButton, IsDefault = true });
                 Load(Model);
             }
             catch (Exception ex)

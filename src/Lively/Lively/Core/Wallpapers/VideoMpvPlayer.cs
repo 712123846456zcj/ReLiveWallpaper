@@ -9,9 +9,11 @@ using Lively.Models.Enums;
 using Lively.Models.LivelyControls;
 using Lively.Models.Message;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -46,12 +48,42 @@ namespace Lively.Core.Wallpapers
         private const string BackgroundAutoProperty = "backgroundColorAuto";
         private const string DefaultBackgroundColor = "#000000";
 
+        /// <summary>
+        /// Image transform controls, mpv has no matching properties for the pixel offsets.
+        /// </summary>
+        private const string PositionXProperty = "imagePositionX";
+        private const string PositionYProperty = "imagePositionY";
+        private const string RotationProperty = "imageRotation";
+        private const string RotationDirectionProperty = "imageRotationCounterClockwise";
+        private const string FlipHorizontalProperty = "imageFlipHorizontal";
+        private const string FlipVerticalProperty = "imageFlipVertical";
+
+        /// <summary>
+        /// Mpv properties used to translate the pixel offsets into offsets mpv understands.
+        /// </summary>
+        private const string VideoParamsProperty = "video-params";
+        private const string OsdDimensionsProperty = "osd-dimensions";
+        private const int MpvQueryRequestId = 1;
+
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         private readonly CancellationTokenSource ctsProcessWait = new();
         private string userBackgroundColor = DefaultBackgroundColor;
         private bool isBackgroundAuto = true;
         private string sampledBackgroundColor;
         private bool isBackgroundColorSampled;
+        private double imagePositionX;
+        private double imagePositionY;
+        private double imageRotation;
+        private bool isRotationCounterClockwise;
+        private bool isFlipHorizontal;
+        private bool isFlipVertical;
+        private WallpaperScaler currentScaler = WallpaperScaler.uniform;
+        private (int width, int height)? videoSize;
+        // Mpv is not sent the same value twice, slider drags would reconfigure the video output.
+        private int appliedRotation = -1;
+        private string appliedFilters;
+        private double appliedPanX = double.NaN;
+        private double appliedPanY = double.NaN;
         private Task<IntPtr> processWaitTask;
         private readonly Process process;
         private readonly int timeOut;
@@ -110,6 +142,9 @@ namespace Lively.Core.Wallpapers
             cmdArgs.Append("--geometry=-9999:0 ");
             // Always create gui window
             cmdArgs.Append("--force-window=yes ");
+            // The window is sized by the core to cover the display, mpv must not resize it around the video.
+            cmdArgs.Append("--keepaspect-window=no ");
+            cmdArgs.Append("--auto-window-resize=no ");
             // Don't move the window when clicking
             cmdArgs.Append("--no-window-dragging ");
             // Don't hide cursor after sometime.
@@ -239,7 +274,7 @@ namespace Lively.Core.Wallpapers
             {
                 LivelyPropertyUtil.LoadProperty(propertyPath, (control) =>
                 {
-                    if (TryApplyBackgroundProperty(control))
+                    if (TryApplyPlayerProperty(control))
                         return;
 
                     switch (control)
@@ -355,6 +390,9 @@ namespace Lively.Core.Wallpapers
 
                 IsLoaded = true;
                 Loaded?.Invoke(this, EventArgs.Empty);
+
+                // The core places and sizes the window after the player loaded, the offsets need that size.
+                _ = ReapplyImageTransformAsync();
             }
             catch (Exception)
             {
@@ -368,6 +406,24 @@ namespace Lively.Core.Wallpapers
                     throw;
                 }
             }
+        }
+
+        /// <summary>
+        /// Re-applies the offset once the core moved the wallpaper window onto the desktop,
+        /// the pan value depends on the window size.
+        /// </summary>
+        private async Task ReapplyImageTransformAsync()
+        {
+            try
+            {
+                await Task.Delay(1500);
+                if (IsExited || (imagePositionX == 0 && imagePositionY == 0))
+                    return;
+
+                appliedPanX = appliedPanY = double.NaN;
+                UpdateImageTransform();
+            }
+            catch { /* Player already gone. */ }
         }
 
         private void Proc_Exited(object sender, EventArgs e)
@@ -425,6 +481,9 @@ namespace Lively.Core.Wallpapers
                     case MessageType.lp_slider:
                         {
                             var sl = (LivelySlider)obj;
+                            if (TryApplyPlayerProperty(sl.Name, sl.Value))
+                                break;
+
                             // Mpv is strongly typed; sending decimal value for integer commands fails.
                             var isFraction = (sl.Step % 1) != 0;
                             msg = GetMpvCommand("set_property", sl.Name, isFraction ? sl.Value : Convert.ToInt32(sl.Value));
@@ -433,7 +492,7 @@ namespace Lively.Core.Wallpapers
                     case MessageType.lp_chekbox:
                         {
                             var chk = (LivelyCheckbox)obj;
-                            if (TryApplyBackgroundProperty(chk.Name, chk.Value))
+                            if (TryApplyPlayerProperty(chk.Name, chk.Value))
                                 break;
                             msg = GetMpvCommand("set_property", chk.Name, chk.Value);
                         }
@@ -457,7 +516,7 @@ namespace Lively.Core.Wallpapers
                     case MessageType.lp_cpicker:
                         {
                             var picker = (LivelyColorPicker)obj;
-                            TryApplyBackgroundProperty(picker.Name, picker.Value);
+                            TryApplyPlayerProperty(picker.Name, picker.Value);
                         }
                         break;
                     case MessageType.lp_fdropdown:
@@ -491,32 +550,224 @@ namespace Lively.Core.Wallpapers
         }
 
         /// <summary>
-        /// Applies the background fill controls, they are not mpv properties and are resolved here.
+        /// Applies the controls mpv has no matching property for, the player resolves them instead.
         /// </summary>
         /// <returns>True when the control was consumed by the player.</returns>
-        private bool TryApplyBackgroundProperty(ControlModel control) => TryApplyBackgroundProperty(control.Name, control switch
+        private bool TryApplyPlayerProperty(ControlModel control) => TryApplyPlayerProperty(control.Name, control switch
         {
             ColorPickerModel colorPicker => colorPicker.Value,
             CheckboxModel checkbox => checkbox.Value,
+            SliderModel slider => slider.Value,
             _ => null,
         });
 
-        private bool TryApplyBackgroundProperty(string name, object value)
+        private bool TryApplyPlayerProperty(string name, object value)
         {
             switch (name)
             {
                 case BackgroundColorProperty:
                     userBackgroundColor = value as string ?? DefaultBackgroundColor;
+                    UpdateBackgroundColor();
                     break;
                 case BackgroundAutoProperty:
                     isBackgroundAuto = value is true;
+                    UpdateBackgroundColor();
+                    break;
+                case PositionXProperty:
+                    imagePositionX = ToNumber(value);
+                    UpdateImageTransform();
+                    break;
+                case PositionYProperty:
+                    imagePositionY = ToNumber(value);
+                    UpdateImageTransform();
+                    break;
+                case RotationProperty:
+                    imageRotation = ToNumber(value);
+                    UpdateImageTransform();
+                    break;
+                case RotationDirectionProperty:
+                    isRotationCounterClockwise = value is true;
+                    UpdateImageTransform();
+                    break;
+                case FlipHorizontalProperty:
+                    isFlipHorizontal = value is true;
+                    UpdateImageTransform();
+                    break;
+                case FlipVerticalProperty:
+                    isFlipVertical = value is true;
+                    UpdateImageTransform();
                     break;
                 default:
                     return false;
             }
 
-            UpdateBackgroundColor();
             return true;
+        }
+
+        private static double ToNumber(object value) => value switch
+        {
+            double number => number,
+            bool boolean => boolean ? 1 : 0,
+            string text when double.TryParse(text, out var number) => number,
+            _ => 0,
+        };
+
+        /// <summary>
+        /// Applies the image transform controls, mpv resolves them through pan, rotate and filters.
+        /// </summary>
+        private void UpdateImageTransform()
+        {
+            // Quarter turns are left to mpv, the rest is rotated by the filter.
+            var mpvRotation = GetRotation() % 90 == 0 ? GetRotation() : 0;
+            if (mpvRotation != appliedRotation)
+            {
+                appliedRotation = mpvRotation;
+                SendMessage(GetMpvCommand("set_property", "video-rotate", mpvRotation));
+            }
+
+            var filters = GetVideoFilters();
+            if (!string.Equals(filters, appliedFilters, StringComparison.Ordinal))
+            {
+                appliedFilters = filters;
+                SendMessage(GetMpvCommand("set_property", "vf", filters));
+            }
+
+            var panX = GetPanValue(imagePositionX, true);
+            if (!Equals(panX, appliedPanX))
+            {
+                appliedPanX = panX;
+                SendMessage(GetMpvCommand("set_property", "video-pan-x", panX));
+            }
+
+            var panY = GetPanValue(imagePositionY, false);
+            if (!Equals(panY, appliedPanY))
+            {
+                appliedPanY = panY;
+                SendMessage(GetMpvCommand("set_property", "video-pan-y", panY));
+            }
+        }
+
+        /// <summary>
+        /// Size of the frame the player displays, mpv swaps the dimensions on a quarter turn.
+        /// <br>The filter rotation keeps the source size, the picture is cropped to it.</br>
+        /// </summary>
+        private static (double width, double height) GetRotatedSize((int width, int height) size, int rotation) =>
+            rotation % 180 == 90 ? (size.height, size.width) : (size.width, size.height);
+
+        /// <summary>
+        /// Mpv rotates clockwise, the control can rotate the other way too.
+        /// </summary>
+        private int GetRotation()
+        {
+            var angle = Math.Abs((int)Math.Round(imageRotation)) % 360;
+            return angle == 0 ? 0 : (isRotationCounterClockwise ? 360 - angle : angle);
+        }
+
+        private string GetVideoFilters()
+        {
+            var filters = new List<string>();
+            if (isFlipHorizontal)
+                filters.Add("hflip");
+            if (isFlipVertical)
+                filters.Add("vflip");
+            // Mpv fills the corners of its own rotation with black, the filter is painted instead.
+            // Quarter turns add no corners, mpv keeps the whole picture for those.
+            var rotation = GetRotation();
+            if (rotation != 0 && rotation % 90 != 0)
+                filters.Add(GetRotationFilter(rotation));
+            return string.Join(",", filters);
+        }
+
+        /// <summary>
+        /// Rotates the frame and paints the uncovered corners with the background color.
+        /// <br>A positive angle rotates clockwise, the same direction mpv uses.</br>
+        /// <br>The frame keeps the source size, mpv would otherwise stretch the rotated picture.</br>
+        /// </summary>
+        private string GetRotationFilter(int rotation)
+        {
+            var radians = (rotation * Math.PI / 180.0).ToString("0.######", CultureInfo.InvariantCulture);
+            var color = GetBackgroundColor().TrimStart('#');
+            // The filter expects RGB without the alpha mpv uses.
+            if (color.Length > 6)
+                color = color.Substring(color.Length - 6);
+            return $"rotate=angle={radians}:ow=iw:oh=ih:fillcolor=0x{color}";
+        }
+
+        /// <summary>
+        /// Mpv pans relative to the scaled video size, the pixel offset is converted to it.
+        /// <br>Mpv ignores this in the stretch fit mode, there is nothing to pan there.</br>
+        /// </summary>
+        private double GetPanValue(double pixels, bool isHorizontal)
+        {
+            if (pixels == 0)
+                return 0;
+
+            var video = GetVideoSize();
+            var window = GetWindowSize();
+            if (video is null || window is null)
+                return 0;
+
+            // The rotation keeps the whole frame, the displayed size grows with the angle.
+            var (videoWidth, videoHeight) = GetRotatedSize(video.Value, GetRotation());
+            if (videoWidth <= 0 || videoHeight <= 0)
+                return 0;
+
+            var scale = currentScaler switch
+            {
+                WallpaperScaler.none => 1.0,
+                WallpaperScaler.uniform => Math.Min(window.Value.width / (double)videoWidth, window.Value.height / (double)videoHeight),
+                _ => Math.Max(window.Value.width / (double)videoWidth, window.Value.height / (double)videoHeight),
+            };
+            var size = (isHorizontal ? videoWidth : videoHeight) * scale;
+            return size > 0 ? pixels / size : 0;
+        }
+
+        /// <summary>
+        /// Video size as reported by mpv, queried once, null while the media is not loaded yet.
+        /// </summary>
+        private (int width, int height)? GetVideoSize()
+        {
+            if (videoSize is null && QueryMpvProperty(VideoParamsProperty) is { } video)
+                videoSize = ReadSize(video);
+
+            return videoSize;
+        }
+
+        /// <summary>
+        /// Size of the video output window, null while the window is not created yet.
+        /// <br>The core resizes the window after the player loads, so the value is not cached.</br>
+        /// </summary>
+        private (int width, int height)? GetWindowSize() =>
+            QueryMpvProperty(OsdDimensionsProperty) is { } window ? ReadSize(window) : null;
+
+        private static (int width, int height)? ReadSize(JObject token)
+        {
+            var width = token.Value<int?>("w");
+            var height = token.Value<int?>("h");
+            return width is > 0 && height is > 0 ? (width.Value, height.Value) : null;
+        }
+
+        /// <summary>
+        /// Reads a property from the player, null when the pipe or the property is unavailable.
+        /// </summary>
+        private JObject QueryMpvProperty(string name)
+        {
+            try
+            {
+                var request = new JObject
+                {
+                    ["command"] = new JArray { "get_property", name },
+                    ["request_id"] = MpvQueryRequestId,
+                };
+                var response = PipeClient.SendMessageWithResponse(ipcServerName, request.ToString(Formatting.None),
+                    string.Format("\"request_id\":{0}", MpvQueryRequestId));
+                return JObject.Parse(response ?? string.Empty)["data"] as JObject;
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"Mpv{uniqueId}: Failed to read the mpv property {name}: {e.Message}");
+                return null;
+            }
         }
 
         /// <summary>
@@ -524,9 +775,18 @@ namespace Lively.Core.Wallpapers
         /// </summary>
         private void UpdateBackgroundColor()
         {
+            SendMessage(GetMpvCommand("set_property", "background-color", GetBackgroundColor()));
+            // The rotation fills the corners with the same color.
+            UpdateImageTransform();
+        }
+
+        /// <summary>
+        /// Color painted where the media does not reach, the sampled one takes over when sampling is on.
+        /// </summary>
+        private string GetBackgroundColor()
+        {
             var color = isBackgroundAuto ? GetSampledBackgroundColor() ?? userBackgroundColor : userBackgroundColor;
-            SendMessage(GetMpvCommand("set_property", "background-color",
-                string.IsNullOrWhiteSpace(color) ? DefaultBackgroundColor : color));
+            return string.IsNullOrWhiteSpace(color) ? DefaultBackgroundColor : color;
         }
 
         /// <summary>
@@ -563,6 +823,7 @@ namespace Lively.Core.Wallpapers
         // Ref: https://github.com/rocksdanister/lively/issues/2194
         private void UpdateScaler(WallpaperScaler scaler)
         {
+            currentScaler = scaler;
             switch (scaler)
             {
                 case WallpaperScaler.none:
@@ -584,6 +845,10 @@ namespace Lively.Core.Wallpapers
                     SendMessage(GetMpvCommand("set_property", "panscan", "1.0"));
                     break;
             }
+
+            // The same pixel offset maps to a different pan value in every fit mode.
+            appliedPanX = appliedPanY = double.NaN;
+            UpdateImageTransform();
         }
 
         #region mpv util
