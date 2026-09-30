@@ -275,6 +275,33 @@ namespace Lively.UI.WinUI.Services
             return await dlg.ShowAsyncQueue()  != ContentDialogResult.Secondary ? vm.SelectedItem.CreateType : null;
         }
 
+        public async Task<(string name, string coverImage)?> ShowLibraryFolderDialogAsync(string title, string name = null, string coverImage = null)
+        {
+            var vm = App.Services.GetRequiredService<FolderEditViewModel>();
+            vm.Name = name;
+            vm.CoverImage = coverImage;
+
+            var dlg = new ContentDialog()
+            {
+                Title = title,
+                Content = new FolderEditView(vm),
+                // Editing an existing folder or creating a new one.
+                PrimaryButtonText = string.IsNullOrEmpty(name) ? i18n.GetString("FolderCreate.Content") : i18n.GetString("TextSave.Content"),
+                SecondaryButtonText = i18n.GetString("Cancel/Content"),
+                DefaultButton = ContentDialogButton.Primary,
+                IsPrimaryButtonEnabled = vm.CanSave,
+                XamlRoot = App.Services.GetRequiredService<MainWindow>().Content.XamlRoot,
+            };
+            vm.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(FolderEditViewModel.CanSave))
+                    dlg.IsPrimaryButtonEnabled = vm.CanSave;
+            };
+
+            return await dlg.ShowAsyncQueue() == ContentDialogResult.Primary ?
+                (vm.Name.Trim(), vm.CoverImage) : null;
+        }
+
         public async Task ShowAboutDialogAsync()
         {
             await new ContentDialog()

@@ -98,6 +98,8 @@
     <None Remove="Views\Pages\Gallery\RestoreWallpaperView.xaml" />
     <None Remove="Views\Pages\Gallery\ShareWallpaperView.xaml" />
     <None Remove="Views\Pages\HelpView.xaml" />
+    <None Remove="Views\Pages\FavoritesView.xaml" />
+    <None Remove="Views\Pages\FolderEditView.xaml" />
     <None Remove="Views\Pages\LibraryAboutView.xaml" />
     <None Remove="Views\Pages\LoginView.xaml" />
     <None Remove="Views\Pages\ScreensaverLayoutView.xaml" />
@@ -366,6 +368,12 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Pages\AddWallpaperView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Pages\FavoritesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Pages\FolderEditView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

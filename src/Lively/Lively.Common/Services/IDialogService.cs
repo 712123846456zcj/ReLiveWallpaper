@@ -34,6 +34,15 @@ namespace Lively.Common.Services
         Task<LibraryModel> ShowDepthWallpaperDialogAsync(string imagePath);
         Task<(WallpaperAddType wallpaperType, List<string> wallpapers)> ShowAddWallpaperDialogAsync();
         Task<WallpaperCreateType?> ShowWallpaperCreateDialogAsync(string filePath);
+
+        /// <summary>
+        /// Prompts for a library folder name and an optional cover image.
+        /// </summary>
+        /// <param name="title">Dialog title.</param>
+        /// <param name="name">Existing folder name, for editing.</param>
+        /// <param name="coverImage">Existing cover image, for editing.</param>
+        /// <returns>Null when cancelled.</returns>
+        Task<(string name, string coverImage)?> ShowLibraryFolderDialogAsync(string title, string name = null, string coverImage = null);
         Task<WallpaperCreateType?> ShowWallpaperCreateDialogAsync();
         Task<bool> ShowWallpaperProjectDirectoryDialogAsync(string folderPath);
         Task<IEnumerable<GalleryModel>> ShowGalleryRestoreWallpaperDialogAsync(IEnumerable<WallpaperDto> wallpapers);

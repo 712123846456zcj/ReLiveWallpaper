@@ -190,6 +190,19 @@ namespace Lively.UI.Shared.ViewModels
             navigator.NavigateTo(ContentPageType.library);
         }
 
+        /// <summary>
+        /// Creates a library folder used to categorise wallpapers.
+        /// </summary>
+        [RelayCommand]
+        private async Task AddFolder()
+        {
+            var result = await dialogService.ShowLibraryFolderDialogAsync(i18n.GetString("TitleCreateFolder"));
+            if (result is null)
+                return;
+
+            libraryVm.SelectedFolder = libraryVm.CreateFolder(result.Value.name, result.Value.coverImage);
+        }
+
         private void I18n_CultureChanged(object sender, string e)
         {
             SearchPlaceholderText = GetSearchPlaceholderText();
@@ -257,6 +270,7 @@ namespace Lively.UI.Shared.ViewModels
             IsSettingsPage = e switch
             {
                 ContentPageType.library => false,
+                ContentPageType.favorites => false,
                 ContentPageType.gallery => false,
                 ContentPageType.appupdate => false,
                 ContentPageType.settingsGeneral => true,
@@ -574,6 +588,7 @@ namespace Lively.UI.Shared.ViewModels
         {
             return [
                 new() { Name = GetPageName(ContentPageType.library), Glyph = "\uE8A9", PageType = ContentPageType.library},
+                new() { Name = GetPageName(ContentPageType.favorites), Glyph = "\uE734", PageType = ContentPageType.favorites},
                 new() { Name = GetPageName(ContentPageType.gallery), Glyph = "\uE719", PageType = ContentPageType.gallery },
                 new()
                 {
@@ -598,6 +613,7 @@ namespace Lively.UI.Shared.ViewModels
             return pageType switch
             {
                 ContentPageType.library => i18n.GetString("TitleLibrary"),
+                ContentPageType.favorites => i18n.GetString("TitleFavorites"),
                 ContentPageType.gallery => i18n.GetString("TitleGallery"),
                 ContentPageType.appupdate => i18n.GetString("TitleUpdates"),
                 ContentPageType.settingsGeneral => i18n.GetString("TitleGeneral"),

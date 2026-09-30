@@ -262,24 +262,8 @@ namespace Lively.UI.WinUI
 
         private void Search()
         {
-            if (string.IsNullOrWhiteSpace(SearchBox.Text))
-            {
-                libraryVm.LibraryItemsFiltered.Filter = _ => true;
-            }
-            else
-            {
-                libraryVm.LibraryItemsFiltered.Filter = _ => true; //reset
-                libraryVm.LibraryItemsFiltered.Filter = x =>
-                {
-                    var item = x as LibraryModel; 
-                    var text = SearchBox.Text;
-                    var tags = item.LivelyInfo.Tags;
-                    return item.Title?.Contains(text, StringComparison.InvariantCultureIgnoreCase) == true
-                        || item.Desc?.Contains(text, StringComparison.InvariantCultureIgnoreCase) == true
-                        || (tags != null && tags.Exists(tag => tag?.Contains(text, StringComparison.InvariantCultureIgnoreCase) == true));
-                };
-            }
-            libraryVm.UpdateSelectedWallpaper();
+            // Folder and text filtering is applied by the viewmodel.
+            libraryVm.SearchText = SearchBox.Text;
         }
 
         private void WebViewRequired_InfoBar_Closed(InfoBar sender, InfoBarClosedEventArgs args) => sender.IsOpen = false;

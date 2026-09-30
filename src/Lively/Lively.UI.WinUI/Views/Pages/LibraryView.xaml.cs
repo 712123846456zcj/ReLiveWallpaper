@@ -20,6 +20,7 @@ namespace Lively.UI.WinUI.Views.Pages
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         private LibraryModel selectedTile;
+        private LibraryFolderItemViewModel selectedFolderTile;
 
         private readonly IResourceService i18n;
         private readonly IUserSettingsClient userSettings;
@@ -97,6 +98,9 @@ namespace Lively.UI.WinUI.Views.Pages
                 case "moreInformation":
                     await dialogService.ShowAboutWallpaperDialogAsync(obj);
                     break;
+                case "removeFromFolder":
+                    libraryVm.SetWallpaperFolder(null, obj);
+                    break;
                 case "reportWallpaper":
                     await dialogService.ShowReportWallpaperDialogAsync(obj);
                     break;
@@ -111,6 +115,7 @@ namespace Lively.UI.WinUI.Views.Pages
                 selectedTile = (LibraryModel)a;
                 if (selectedTile.IsReadyToSet)
                 {
+                    BuildFolderMenu(selectedTile);
                     var item = sender as GridView;
                     contextMenu.ShowAt(item, e.GetPosition(item));
                     customiseWallpaper.IsEnabled = selectedTile.LivelyPropertyPath != null;
@@ -132,6 +137,7 @@ namespace Lively.UI.WinUI.Views.Pages
                 if (selectedTile.IsReadyToSet)
                 {
                     customiseWallpaper.IsEnabled = selectedTile.LivelyPropertyPath != null;
+                    BuildFolderMenu(selectedTile);
                     contextMenu.ShowAt((UIElement)e.OriginalSource, new Point(0, 0));
                 }
             }
@@ -139,6 +145,119 @@ namespace Lively.UI.WinUI.Views.Pages
             {
                 selectedTile = null;
                 customiseWallpaper.IsEnabled = false;
+            }
+        }
+
+        /// <summary>
+        /// Fills the "add to folder" context menu with the folders available.
+        /// </summary>
+        private void BuildFolderMenu(LibraryModel wallpaper)
+        {
+            moveToFolder.Items.Clear();
+            removeFromFolder.IsEnabled = false;
+            if (wallpaper is null)
+                return;
+
+            var currentFolder = libraryVm.GetFolder(wallpaper);
+            foreach (var folder in libraryVm.FolderItems.Where(x => !x.IsRoot))
+            {
+                var item = new MenuFlyoutItem()
+                {
+                    Text = folder.Name,
+                    Tag = folder,
+                    Icon = new FontIcon() { Glyph = folder == currentFolder ? "\uE73E" : "\uE8B7" },
+                };
+                item.Click += MoveToFolder_Click;
+                moveToFolder.Items.Add(item);
+            }
+
+            if (moveToFolder.Items.Count != 0)
+                moveToFolder.Items.Add(new MenuFlyoutSeparator());
+
+            var newFolder = new MenuFlyoutItem()
+            {
+                Text = i18n.GetString("NewFolder.Text"),
+                Icon = new FontIcon() { Glyph = "\uE8F4" },
+            };
+            newFolder.Click += NewFolderWithWallpaper_Click;
+            moveToFolder.Items.Add(newFolder);
+
+            removeFromFolder.IsEnabled = currentFolder is not null;
+        }
+
+        private void MoveToFolder_Click(object sender, RoutedEventArgs e)
+        {
+            if (selectedTile is null || (sender as MenuFlyoutItem)?.Tag is not LibraryFolderItemViewModel folder)
+                return;
+
+            libraryVm.SetWallpaperFolder(folder, selectedTile);
+        }
+
+        private async void NewFolderWithWallpaper_Click(object sender, RoutedEventArgs e)
+        {
+            if (selectedTile is null)
+                return;
+
+            var wallpaper = selectedTile;
+            var result = await dialogService.ShowLibraryFolderDialogAsync(i18n.GetString("TitleCreateFolder"));
+            if (result is null)
+                return;
+
+            var folder = libraryVm.CreateFolder(result.Value.name, result.Value.coverImage);
+            libraryVm.SetWallpaperFolder(folder, wallpaper);
+        }
+
+        private void FolderListView_RightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            try
+            {
+                selectedFolderTile = ((FrameworkElement)e.OriginalSource).DataContext as LibraryFolderItemViewModel;
+                if (selectedFolderTile is null)
+                    return;
+
+                // The tile showing the entire library cannot be changed.
+                openFolder.IsEnabled = !selectedFolderTile.IsRoot;
+                renameFolder.IsEnabled = !selectedFolderTile.IsRoot;
+                deleteFolder.IsEnabled = !selectedFolderTile.IsRoot;
+
+                var item = sender as ListView;
+                folderContextMenu.ShowAt(item, e.GetPosition(item));
+            }
+            catch
+            {
+                selectedFolderTile = null;
+            }
+        }
+
+        private async void FolderMenu_Click(object sender, RoutedEventArgs e)
+        {
+            if (selectedFolderTile is null)
+                return;
+
+            var folder = selectedFolderTile;
+            switch ((sender as MenuFlyoutItem).Name)
+            {
+                case "openFolder":
+                    libraryVm.SelectedFolder = folder;
+                    break;
+                case "renameFolder":
+                    {
+                        var result = await dialogService.ShowLibraryFolderDialogAsync(i18n.GetString("TitleEditFolder"), folder.Name, folder.Data.CoverImage);
+                        if (result is null)
+                            return;
+
+                        libraryVm.UpdateFolder(folder, result.Value.name, result.Value.coverImage);
+                    }
+                    break;
+                case "deleteFolder":
+                    {
+                        var message = string.Format(i18n.GetString("DeleteFolderConfirm.Text"), folder.Name);
+                        if (!await dialogService.ShowConfirmationDialogAsync(message))
+                            return;
+
+                        libraryVm.DeleteFolder(folder);
+                    }
+                    break;
             }
         }
 

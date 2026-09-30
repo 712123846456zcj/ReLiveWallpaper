@@ -16,6 +16,7 @@ using Lively.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -45,9 +46,13 @@ namespace Lively.UI.Shared.ViewModels
         private readonly IDialogService dialogService;
         private readonly IFileService fileService;
         private readonly GalleryClient galleryClient;
+        private readonly ILibraryFolderService folderService;
 
         private readonly IResourceService i18n;
         private TaskCompletionSource<LibraryModel> selectionTaskCompletionSource;
+        private readonly LibraryFolderItemViewModel rootFolderItem;
+        /// <summary>Library items by directory name, rebuilt when the library changes.</summary>
+        private Dictionary<string, LibraryModel> libraryLookup;
 
         public LibraryViewModel(IWallpaperLibraryFactory wallpaperLibraryFactory, 
             IDesktopCoreClient desktopCore,
@@ -58,6 +63,7 @@ namespace Lively.UI.Shared.ViewModels
             IResourceService i18n,
             IFileService fileService,
             IMediaFormatConverter mediaFormatConverter,
+            ILibraryFolderService folderService,
             GalleryClient galleryClient)
         {
             this.wallpaperLibraryFactory = wallpaperLibraryFactory;
@@ -69,6 +75,7 @@ namespace Lively.UI.Shared.ViewModels
             this.dispatcher = dispatcher;
             this.fileService = fileService;
             this.galleryClient = galleryClient;
+            this.folderService = folderService;
 
             this.i18n = i18n;
 
@@ -87,6 +94,14 @@ namespace Lively.UI.Shared.ViewModels
                     LibraryItems.Add(item);
                 }
             }
+
+            // Categorisation folders, the first tile represents the entire library.
+            rootFolderItem = LibraryFolderItemViewModel.CreateRoot(i18n.GetString("TextAllWallpapers"));
+            FolderItems.Add(rootFolderItem);
+            FolderItems.CollectionChanged += (s, e) => OnPropertyChanged(nameof(HasFolders));
+            LibraryItems.CollectionChanged += LibraryItems_CollectionChanged;
+            LoadFolders();
+            SelectedFolder = rootFolderItem;
 
             LibrarySelectionMode = userSettings.Settings.RememberSelectedScreen ? "Single" : "None";
             //Select already running item when UI program is started again..
@@ -141,6 +156,46 @@ namespace Lively.UI.Shared.ViewModels
             }
         }
 
+        /// <summary>
+        /// Library tiles: the first item represents all wallpapers, followed by the user created folders.
+        /// </summary>
+        public ObservableCollection<LibraryFolderItemViewModel> FolderItems { get; } = new();
+
+        /// <summary>
+        /// Whether a folder was created, the folder strip is hidden otherwise.
+        /// </summary>
+        public bool HasFolders => FolderItems.Count > 1;
+
+        private LibraryFolderItemViewModel _selectedFolder;
+        /// <summary>
+        /// Folder filtering the library, the root item shows everything.
+        /// </summary>
+        public LibraryFolderItemViewModel SelectedFolder
+        {
+            get => _selectedFolder;
+            set
+            {
+                if (SetProperty(ref _selectedFolder, value))
+                    ApplyFilters();
+            }
+        }
+
+        private string _searchText;
+        /// <summary>
+        /// Library search query, combined with the selected folder.
+        /// </summary>
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (SetProperty(ref _searchText, value))
+                {
+                    ApplyFilters();
+                    UpdateSelectedWallpaper();
+                }
+            }
+        }
         [ObservableProperty]
         private string librarySelectionMode = "Single";
 
@@ -237,6 +292,228 @@ namespace Lively.UI.Shared.ViewModels
             }
         }
 
+        #region folders
+
+        /// <summary>
+        /// Create a folder and adds it to the library tiles.
+        /// </summary>
+        public LibraryFolderItemViewModel CreateFolder(string name, string coverImage)
+        {
+            var folder = new LibraryFolderItemViewModel(new LibraryFolderModel()
+            {
+                Id = Guid.NewGuid().ToString("N"),
+                Name = name,
+                CoverImage = coverImage,
+            });
+
+            FolderItems.Add(folder);
+            SaveFolders();
+            RefreshFolderPreviews();
+            return folder;
+        }
+
+        /// <summary>
+        /// Rename a folder and/or change its cover image.
+        /// </summary>
+        public void UpdateFolder(LibraryFolderItemViewModel folder, string name, string coverImage)
+        {
+            if (folder is null || folder.IsRoot)
+                return;
+
+            folder.Name = name;
+            folder.Data.Name = name;
+            folder.Data.CoverImage = coverImage;
+            SaveFolders();
+            RefreshFolderPreviews();
+        }
+
+        /// <summary>
+        /// Deletes a folder, the wallpapers contained are not deleted.
+        /// </summary>
+        public void DeleteFolder(LibraryFolderItemViewModel folder)
+        {
+            if (folder is null || folder.IsRoot)
+                return;
+
+            FolderItems.Remove(folder);
+            if (SelectedFolder == folder)
+                SelectedFolder = rootFolderItem;
+
+            SaveFolders();
+            RefreshFolderPreviews();
+        }
+
+        /// <summary>
+        /// Folder containing the given wallpaper, null when it is not categorised.
+        /// </summary>
+        public LibraryFolderItemViewModel GetFolder(LibraryModel model)
+        {
+            var key = GetWallpaperKey(model);
+            return FolderItems.FirstOrDefault(x => !x.IsRoot && x.Data.Wallpapers.Contains(key, StringComparer.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Moves a wallpaper into the given folder, a wallpaper belongs to a single folder at a time.
+        /// Pass the root item or null to remove it from its folder.
+        /// </summary>
+        public void SetWallpaperFolder(LibraryFolderItemViewModel folder, LibraryModel model)
+        {
+            if (model is null)
+                return;
+
+            var key = GetWallpaperKey(model);
+            var changed = false;
+            foreach (var item in FolderItems)
+            {
+                if (item.IsRoot)
+                    continue;
+
+                changed |= item.Data.Wallpapers.RemoveAll(x => string.Equals(x, key, StringComparison.OrdinalIgnoreCase)) != 0;
+            }
+
+            if (folder is { IsRoot: false } && !folder.Data.Wallpapers.Contains(key, StringComparer.OrdinalIgnoreCase))
+            {
+                folder.Data.Wallpapers.Add(key);
+                changed = true;
+            }
+
+            if (!changed)
+                return;
+
+            SaveFolders();
+            RefreshFolderPreviews();
+            ApplyFilters();
+        }
+
+        /// <summary>
+        /// Applies the folder and search criteria to the library view.
+        /// </summary>
+        public void ApplyFilters()
+        {
+            LibraryItemsFiltered.Filter = FilterLibraryItem;
+            LibraryItemsFiltered.Refresh();
+        }
+
+        private bool FilterLibraryItem(object obj)
+        {
+            if (obj is not LibraryModel item)
+                return false;
+
+            if (SelectedFolder is { IsRoot: false } && !SelectedFolder.Data.Wallpapers.Contains(GetWallpaperKey(item), StringComparer.OrdinalIgnoreCase))
+                return false;
+
+            if (string.IsNullOrWhiteSpace(_searchText))
+                return true;
+
+            var text = _searchText;
+            var tags = item.LivelyInfo.Tags;
+            return item.Title?.Contains(text, StringComparison.InvariantCultureIgnoreCase) == true
+                || item.Desc?.Contains(text, StringComparison.InvariantCultureIgnoreCase) == true
+                || (tags != null && tags.Exists(tag => tag?.Contains(text, StringComparison.InvariantCultureIgnoreCase) == true));
+        }
+
+        private void LoadFolders()
+        {
+            foreach (var item in FolderItems.Skip(1).ToList())
+                FolderItems.Remove(item);
+
+            foreach (var item in folderService.Load())
+                FolderItems.Add(new LibraryFolderItemViewModel(item));
+
+            // Drop wallpapers that are no longer part of the library.
+            var lookup = GetLibraryLookup();
+            var isPruned = false;
+            foreach (var item in FolderItems.Skip(1))
+                isPruned |= item.Data.Wallpapers.RemoveAll(x => !lookup.ContainsKey(x)) != 0;
+
+            if (isPruned)
+                SaveFolders();
+
+            RefreshFolderPreviews();
+        }
+
+        private void SaveFolders()
+        {
+            folderService.Save(FolderItems.Where(x => !x.IsRoot).Select(x => x.Data));
+        }
+
+        /// <summary>
+        /// Directory name of the wallpaper, used to reference it inside folders.
+        /// </summary>
+        private static string GetWallpaperKey(LibraryModel model)
+        {
+            try
+            {
+                return Path.GetFileName(model.LivelyInfoFolderPath);
+            }
+            catch (ArgumentException)
+            {
+                return model.LivelyInfoFolderPath;
+            }
+        }
+
+        private Dictionary<string, LibraryModel> GetLibraryLookup()
+        {
+            if (libraryLookup is null)
+            {
+                libraryLookup = new Dictionary<string, LibraryModel>(StringComparer.OrdinalIgnoreCase);
+                foreach (var item in LibraryItems)
+                {
+                    if (string.IsNullOrWhiteSpace(item.LivelyInfoFolderPath))
+                        continue;
+
+                    libraryLookup[GetWallpaperKey(item)] = item;
+                }
+            }
+
+            return libraryLookup;
+        }
+
+        private void LibraryItems_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            libraryLookup = null;
+            RefreshFolderPreviews();
+        }
+
+        /// <summary>
+        /// Updates the folder tiles with the wallpaper count and the auto picked cover.
+        /// </summary>
+        private void RefreshFolderPreviews()
+        {
+            foreach (var folder in FolderItems)
+            {
+                if (folder.IsRoot)
+                {
+                    folder.WallpaperCount = LibraryItems.Count;
+                    folder.SetCoverPlaceholder("\uE8A9");
+                    continue;
+                }
+
+                var wallpapers = folder.Data.Wallpapers.Select(x => GetLibraryLookup().GetValueOrDefault(x)).Where(x => x != null).ToList();
+                folder.WallpaperCount = wallpapers.Count;
+
+                // Cover picked by the user.
+                if (!string.IsNullOrWhiteSpace(folder.Data.CoverImage) && File.Exists(folder.Data.CoverImage))
+                {
+                    folder.SetCoverImage(folder.Data.CoverImage);
+                    continue;
+                }
+
+                var images = wallpapers
+                    .Select(x => x.ThumbnailPath)
+                    .Where(x => !string.IsNullOrWhiteSpace(x) && File.Exists(x))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Take(4)
+                    .ToList();
+
+                if (images.Count == 0)
+                    folder.SetCoverPlaceholder("\uE8F4");
+                else
+                    folder.SetCoverCollage(images);
+            }
+        }
+
+        #endregion //folders
         #region public methods
 
         /// <summary>
@@ -268,6 +545,8 @@ namespace Lively.UI.Shared.ViewModels
                     }
                     //remove from library.
                     LibraryItems.Remove(obj);
+                    //remove from any categorisation folder.
+                    SetWallpaperFolder(null, obj);
                     WallpaperDeleted?.Invoke(this, obj.LivelyInfo.Id);
                     try
                     {
@@ -706,6 +985,8 @@ namespace Lively.UI.Shared.ViewModels
                     LibraryItems.Add(item);
                 }
             }
+            LoadFolders();
+            SelectedFolder = rootFolderItem;
         }
 
         public void UpdateAnimationSettings(LivelyGUIState state)

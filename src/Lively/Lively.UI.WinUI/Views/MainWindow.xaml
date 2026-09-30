@@ -179,6 +179,22 @@
                             <FontIcon Glyph="&#xE710;" />
                         </AppBarButton.Icon>
                     </AppBarButton>
+                    <!--  Create Folder  -->
+                    <AppBarButton
+                        x:Name="addFolderLabel"
+                        x:Uid="AddFolder"
+                        MaxWidth="50"
+                        Command="{Binding AddFolderCommand}"
+                        LabelPosition="Collapsed">
+                        <ToolTipService.ToolTip>
+                            <ToolTip>
+                                <TextBlock x:Uid="AddFolderDrop" />
+                            </ToolTip>
+                        </ToolTipService.ToolTip>
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xE8F4;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
                     <!--  Control Panel  -->
                     <AppBarButton
                         x:Name="controlPanelLabel"

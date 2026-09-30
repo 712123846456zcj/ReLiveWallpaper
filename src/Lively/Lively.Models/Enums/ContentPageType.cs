@@ -3,6 +3,7 @@
     public enum ContentPageType
     {
         library,
+        favorites,
         gallery,
         appupdate,
         settingsGeneral,

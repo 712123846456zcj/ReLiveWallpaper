@@ -1302,4 +1302,64 @@ Grid 网格：利用网格算法更精准地确定暂停时机</value>
   <data name="RestartWallpaperAfterLockscreen.Header" xml:space="preserve">
     <value>从锁屏返回时重启壁纸</value>
   </data>
+  <data name="TitleFavorites" xml:space="preserve">
+    <value>收藏</value>
+  </data>
+  <data name="TextAllWallpapers" xml:space="preserve">
+    <value>全部壁纸</value>
+  </data>
+  <data name="AddFolder.Label" xml:space="preserve">
+    <value>新建文件夹</value>
+  </data>
+  <data name="AddFolderDrop.Text" xml:space="preserve">
+    <value>新建文件夹</value>
+  </data>
+  <data name="TitleCreateFolder" xml:space="preserve">
+    <value>新建文件夹</value>
+  </data>
+  <data name="TitleEditFolder" xml:space="preserve">
+    <value>编辑文件夹</value>
+  </data>
+  <data name="FolderCreate.Content" xml:space="preserve">
+    <value>创建</value>
+  </data>
+  <data name="FolderName.Header" xml:space="preserve">
+    <value>文件夹名称</value>
+  </data>
+  <data name="FolderName.PlaceholderText" xml:space="preserve">
+    <value>输入名称</value>
+  </data>
+  <data name="FolderCover.Text" xml:space="preserve">
+    <value>文件夹封面</value>
+  </data>
+  <data name="FolderCoverAutoHint.Text" xml:space="preserve">
+    <value>留空则自动使用文件夹内壁纸的预览图</value>
+  </data>
+  <data name="SelectImage.Content" xml:space="preserve">
+    <value>选择图片</value>
+  </data>
+  <data name="ClearCover.Content" xml:space="preserve">
+    <value>清除</value>
+  </data>
+  <data name="OpenFolder.Text" xml:space="preserve">
+    <value>打开</value>
+  </data>
+  <data name="RenameFolder.Text" xml:space="preserve">
+    <value>重命名</value>
+  </data>
+  <data name="DeleteFolder.Text" xml:space="preserve">
+    <value>删除文件夹</value>
+  </data>
+  <data name="DeleteFolderConfirm.Text" xml:space="preserve">
+    <value>删除文件夹「{0}」？其中的壁纸不会被删除。</value>
+  </data>
+  <data name="AddToFolder.Text" xml:space="preserve">
+    <value>分类到文件夹</value>
+  </data>
+  <data name="RemoveFromFolder.Text" xml:space="preserve">
+    <value>移出文件夹</value>
+  </data>
+  <data name="NewFolder.Text" xml:space="preserve">
+    <value>新建文件夹…</value>
+  </data>
 </root>

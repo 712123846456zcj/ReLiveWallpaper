@@ -1298,4 +1298,64 @@ If still not working, close &amp; start Lively again/restart windows.
   <data name="RestartWallpaperAfterLockscreen.Header" xml:space="preserve">
     <value>Restart wallpaper when returning from lock screen</value>
   </data>
+  <data name="TitleFavorites" xml:space="preserve">
+    <value>Favorites</value>
+  </data>
+  <data name="TextAllWallpapers" xml:space="preserve">
+    <value>All Wallpapers</value>
+  </data>
+  <data name="AddFolder.Label" xml:space="preserve">
+    <value>New Folder</value>
+  </data>
+  <data name="AddFolderDrop.Text" xml:space="preserve">
+    <value>Create folder</value>
+  </data>
+  <data name="TitleCreateFolder" xml:space="preserve">
+    <value>New Folder</value>
+  </data>
+  <data name="TitleEditFolder" xml:space="preserve">
+    <value>Edit Folder</value>
+  </data>
+  <data name="FolderCreate.Content" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="FolderName.Header" xml:space="preserve">
+    <value>Folder name</value>
+  </data>
+  <data name="FolderName.PlaceholderText" xml:space="preserve">
+    <value>Enter a name</value>
+  </data>
+  <data name="FolderCover.Text" xml:space="preserve">
+    <value>Folder cover</value>
+  </data>
+  <data name="FolderCoverAutoHint.Text" xml:space="preserve">
+    <value>Leave empty to preview the wallpapers inside the folder</value>
+  </data>
+  <data name="SelectImage.Content" xml:space="preserve">
+    <value>Choose image</value>
+  </data>
+  <data name="ClearCover.Content" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="OpenFolder.Text" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="RenameFolder.Text" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="DeleteFolder.Text" xml:space="preserve">
+    <value>Delete folder</value>
+  </data>
+  <data name="DeleteFolderConfirm.Text" xml:space="preserve">
+    <value>Delete the folder "{0}"? The wallpapers inside are not deleted.</value>
+  </data>
+  <data name="AddToFolder.Text" xml:space="preserve">
+    <value>Add to folder</value>
+  </data>
+  <data name="RemoveFromFolder.Text" xml:space="preserve">
+    <value>Remove from folder</value>
+  </data>
+  <data name="NewFolder.Text" xml:space="preserve">
+    <value>New folder...</value>
+  </data>
 </root>

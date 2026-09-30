@@ -37,6 +37,7 @@ namespace Lively.Common
             public static string WallpaperInstallDir { get; } = "wallpapers";
             public static string WallpaperInstallTempDir { get; } = Path.Combine("SaveData", "wptmp");
             public static string WallpaperSettingsDir { get; } = Path.Combine("SaveData", "wpdata");
+            public static string LibraryFoldersFile { get; } = Path.Combine("SaveData", "LibraryFolders.json");
         }
 
         /// <summary>

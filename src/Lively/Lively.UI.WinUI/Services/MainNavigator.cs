@@ -42,6 +42,7 @@ namespace Lively.UI.WinUI.Services
             Type pageType = contentPage switch
             {
                 ContentPageType.library => typeof(LibraryView),
+                ContentPageType.favorites => typeof(FavoritesView),
                 ContentPageType.gallery => typeof(GalleryView),
                 ContentPageType.appupdate => typeof(AppUpdateView),
                 ContentPageType.settingsGeneral => typeof(SettingsGeneralView),
