@@ -8,6 +8,7 @@ using Lively.Common.Helpers.Pinvoke;
 using Lively.Common.Services;
 using Lively.Core;
 using Lively.Core.Display;
+using Lively.Core.Effects;
 using Lively.Core.Suspend;
 using Lively.Core.Watchdog;
 using Lively.Factories;
@@ -116,6 +117,8 @@ namespace Lively
             {
                 // Run startup tasks.
                 Services.GetRequiredService<AppInitializer>().Run();
+                // Overlay effects are independent of the wallpaper, restore the enabled ones.
+                Services.GetRequiredService<IEffectService>().Start();
                 // Set application language.
                 Services.GetRequiredService<IResourceService>().SetCulture(userSettings.Settings.Language);
                 Services.GetRequiredService<WndProcMsgWindow>().Show();
@@ -241,6 +244,7 @@ namespace Lively
                 .AddSingleton<AppUpdateServer>()
                 .AddSingleton<IResourceService, ResourceService>()
                 .AddSingleton<IWindowService, WindowService>()
+                .AddSingleton<IEffectService, EffectService>()
                 // Transient
                 .AddTransient<AppInitializer>()
                 .AddTransient<LibraryPreviewViewModel>()

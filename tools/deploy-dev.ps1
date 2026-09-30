@@ -8,6 +8,7 @@
         <root>\Lively.exe                       内核（WPF 宿主）
         <root>\plugins\UI\Lively.UI.WinUI.exe   WinUI 3 前端，由内核拉起
         <root>\plugins\webview2\                网页壁纸播放器（默认）
+        <root>\plugins\overlay\                 桌面叠加层特效播放器（雨滴等）
         <root>\plugins\mpv\                     视频/图片/GIF 壁纸播放器（第三方）
         <root>\plugins\Watchdog\                子进程看门狗
         <root>\bundle\{wallpapers,themes}\      首次运行解包的默认壁纸/主题
@@ -113,6 +114,10 @@ $webView2Out = Resolve-OutputDir 'Lively.Player.WebView2.exe' @(
     (Join-Path $repoRoot "src\Lively\Lively.Player.WebView2\bin\x64\$Configuration"),
     (Join-Path $repoRoot "src\Lively\Lively.Player.WebView2\bin\$Configuration"))
 
+$overlayOut = Resolve-OutputDir 'Lively.Player.Overlay.exe' @(
+    (Join-Path $repoRoot "src\Lively\Lively.Player.Overlay\bin\x64\$Configuration"),
+    (Join-Path $repoRoot "src\Lively\Lively.Player.Overlay\bin\$Configuration"))
+
 $watchdogOut = Resolve-OutputDir 'Lively.Utility.Watchdog.exe' @(
     (Join-Path $repoRoot "src\Lively\Lively.Utility.Watchdog\bin\x64\$Configuration"),
     (Join-Path $repoRoot "src\Lively\Lively.Utility.Watchdog\bin\$Configuration"))
@@ -144,6 +149,9 @@ Copy-Tree $uiOut (Join-Path $resolvedOut 'plugins\UI') $uiOut
 
 Write-Step 'WebView2 播放器 -> plugins\webview2'
 Copy-Tree $webView2Out (Join-Path $resolvedOut 'plugins\webview2') $webView2Out
+
+Write-Step '叠加层特效播放器 -> plugins\overlay'
+Copy-Tree $overlayOut (Join-Path $resolvedOut 'plugins\overlay') $overlayOut
 
 # WatchdogProcess 查找的是 "Lively.Watchdog"，与工程 AssemblyName 不一致，这里改名。
 Write-Step 'Watchdog -> plugins\Watchdog'

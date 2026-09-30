@@ -169,6 +169,7 @@ namespace Lively.UI.WinUI
                 .AddTransient<ChooseDisplayViewModel>()
                 .AddTransient<FindMoreAppsViewModel>()
                 .AddTransient<AppThemeViewModel>()
+                .AddTransient<EffectsViewModel>()
                 .AddTransient<GalleryLoginViewModel>()
                 .AddTransient<ManageAccountViewModel>()
                 .AddTransient<RestoreWallpaperViewModel>()

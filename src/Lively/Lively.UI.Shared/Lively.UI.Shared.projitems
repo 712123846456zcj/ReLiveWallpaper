@@ -34,6 +34,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\Gallery\ReportWallpaperViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\Gallery\RestoreWallpaperViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\LibraryAboutViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\EffectsViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\FolderEditViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\LibraryFolderItemViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\LibraryViewModel.cs" />

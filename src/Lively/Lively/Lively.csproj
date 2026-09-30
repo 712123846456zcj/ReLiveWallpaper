@@ -43,6 +43,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Overlay effect templates, one directory per effect id. -->
+    <None Remove="Assets\Plugins\Overlay\**\*" />
+    <Content Include="Assets\Plugins\Overlay\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\Plugins\Mpv\LivelyProperties.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

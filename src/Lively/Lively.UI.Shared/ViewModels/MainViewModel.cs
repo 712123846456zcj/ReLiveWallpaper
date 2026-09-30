@@ -596,6 +596,7 @@ namespace Lively.UI.Shared.ViewModels
             return [
                 new() { Name = GetPageName(ContentPageType.library), Glyph = "\uE8A9", PageType = ContentPageType.library},
                 new() { Name = GetPageName(ContentPageType.favorites), Glyph = "\uE734", PageType = ContentPageType.favorites},
+                new() { Name = GetPageName(ContentPageType.effects), Glyph = "\uE9E9", PageType = ContentPageType.effects},
                 new() { Name = GetPageName(ContentPageType.gallery), Glyph = "\uE719", PageType = ContentPageType.gallery },
                 new()
                 {
@@ -621,6 +622,7 @@ namespace Lively.UI.Shared.ViewModels
             {
                 ContentPageType.library => i18n.GetString("TitleLibrary"),
                 ContentPageType.favorites => i18n.GetString("TitleFavorites"),
+                ContentPageType.effects => i18n.GetString("TitleEffects"),
                 ContentPageType.gallery => i18n.GetString("TitleGallery"),
                 ContentPageType.appupdate => i18n.GetString("TitleUpdates"),
                 ContentPageType.settingsGeneral => i18n.GetString("TitleGeneral"),

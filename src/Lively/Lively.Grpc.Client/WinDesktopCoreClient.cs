@@ -11,6 +11,7 @@ using Lively.Models.Message;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -208,6 +209,47 @@ namespace Lively.Grpc.Client
             {
                 MonitorId = monitorId,
                 SavePath = savePath,
+            });
+        }
+
+        public async Task<List<EffectInfo>> GetEffects()
+        {
+            var response = await client.GetEffectsAsync(new Empty());
+            return response.Effects
+                .Select(x => new EffectInfo()
+                {
+                    Id = x.Id,
+                    IsAvailable = x.IsAvailable,
+                    IsEnabled = x.IsEnabled,
+                    PropertyPath = string.IsNullOrEmpty(x.PropertyPath) ? null : x.PropertyPath,
+                })
+                .ToList();
+        }
+
+        public async Task SetEffect(string effectId, bool isEnabled)
+        {
+            await client.SetEffectAsync(new SetEffectRequest()
+            {
+                EffectId = effectId,
+                IsEnabled = isEnabled,
+            });
+        }
+
+        public async Task SetEffectProperty(string effectId, string key, string value)
+        {
+            await client.SetEffectPropertyAsync(new SetEffectPropertyRequest()
+            {
+                EffectId = effectId,
+                Key = key,
+                Value = value,
+            });
+        }
+
+        public async Task ResetEffectProperties(string effectId)
+        {
+            await client.ResetEffectPropertiesAsync(new EffectRequest()
+            {
+                EffectId = effectId,
             });
         }
 

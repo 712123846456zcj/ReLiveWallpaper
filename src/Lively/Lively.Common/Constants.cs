@@ -38,6 +38,10 @@ namespace Lively.Common
             public static string WallpaperInstallTempDir { get; } = Path.Combine("SaveData", "wptmp");
             public static string WallpaperSettingsDir { get; } = Path.Combine("SaveData", "wpdata");
             public static string LibraryFoldersFile { get; } = Path.Combine("SaveData", "LibraryFolders.json");
+            /// <summary>
+            /// User copies of the overlay effect properties, one directory per effect id.
+            /// </summary>
+            public static string EffectsSettingsDir { get; } = Path.Combine("SaveData", "effects");
         }
 
         /// <summary>
@@ -53,6 +57,8 @@ namespace Lively.Common
             public static string WebView2Path { get; } = Path.Combine(WebView2Dir, "Lively.Player.WebView2.exe");
             public static string WmfDir { get; } = Path.Combine("plugins", "wmf");
             public static string WmfPath { get; } = Path.Combine(WmfDir, "Lively.PlayerWmf.exe");
+            public static string OverlayDir { get; } = Path.Combine("plugins", "overlay");
+            public static string OverlayPath { get; } = Path.Combine(OverlayDir, "Lively.Player.Overlay.exe");
             public static string VlcDir { get; } = Path.Combine("plugins", "vlc");
             public static string VlcPath { get; } = Path.Combine(VlcDir, "vlc.exe");
             public static string LibVlcDir { get; } = Path.Combine("plugins", "libvlc");

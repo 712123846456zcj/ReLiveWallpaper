@@ -8,6 +8,7 @@ using Lively.Common.JsonConverters;
 using Lively.Common.Services;
 using Lively.Core;
 using Lively.Core.Display;
+using Lively.Core.Effects;
 using Lively.Extensions;
 using Lively.Factories;
 using Lively.Grpc.Common.Proto.Desktop;
@@ -40,6 +41,7 @@ namespace Lively.RPC
         private readonly IWindowService windowService;
         private readonly IWallpaperLibraryFactory wallpaperLibraryFactory;
         private readonly IWallpaperPluginFactory wallpaperFactory;
+        private readonly IEffectService effectService;
 
         public WinDesktopCoreServer(IDesktopCore desktopCore,
             IRunnerService runner,
@@ -48,7 +50,8 @@ namespace Lively.RPC
             IUserSettingsService userSettings,
             IWindowService windowService,
             IWallpaperPluginFactory wallpaperFactory,
-            IWallpaperLibraryFactory wallpaperLibraryFactory)
+            IWallpaperLibraryFactory wallpaperLibraryFactory,
+            IEffectService effectService)
         {
             this.runner = runner;
             this.desktopCore = desktopCore;
@@ -58,6 +61,66 @@ namespace Lively.RPC
             this.windowService = windowService;
             this.wallpaperFactory = wallpaperFactory;
             this.wallpaperLibraryFactory = wallpaperLibraryFactory;
+            this.effectService = effectService;
+        }
+
+        public override Task<GetEffectsResponse> GetEffects(Empty _, ServerCallContext context)
+        {
+            var response = new GetEffectsResponse();
+            foreach (var effect in effectService.GetEffects())
+            {
+                response.Effects.Add(new EffectData()
+                {
+                    Id = effect.Id,
+                    IsAvailable = effect.IsAvailable,
+                    IsEnabled = effect.IsEnabled,
+                    PropertyPath = effect.PropertyPath ?? string.Empty,
+                });
+            }
+
+            return Task.FromResult(response);
+        }
+
+        public override async Task<Empty> SetEffect(SetEffectRequest request, ServerCallContext context)
+        {
+            try
+            {
+                await effectService.SetEnabledAsync(request.EffectId, request.IsEnabled);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
+
+            return new Empty();
+        }
+
+        public override async Task<Empty> SetEffectProperty(SetEffectPropertyRequest request, ServerCallContext context)
+        {
+            try
+            {
+                await effectService.SetPropertyAsync(request.EffectId, request.Key, request.Value);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
+
+            return new Empty();
+        }
+
+        public override async Task<Empty> ResetEffectProperties(EffectRequest request, ServerCallContext context)
+        {
+            try
+            {
+                await effectService.ResetPropertiesAsync(request.EffectId);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
+
+            return new Empty();
         }
 
         public override Task<GetCoreStatsResponse> GetCoreStats(Empty _, ServerCallContext context)

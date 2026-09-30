@@ -91,6 +91,7 @@
     <None Remove="Views\Pages\ChooseDisplayView.xaml" />
     <None Remove="Views\Pages\ControlPanelView.xaml" />
     <None Remove="Views\Pages\DepthEstimateWallpaperView.xaml" />
+    <None Remove="Views\Pages\EffectsView.xaml" />
     <None Remove="Views\Pages\GalleryView.xaml" />
     <None Remove="Views\Pages\Gallery\GalleryFeaturedView.xaml" />
     <None Remove="Views\Pages\Gallery\GallerySubscriptionView.xaml" />
@@ -375,6 +376,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\Pages\FavoritesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Pages\EffectsView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\Pages\FolderEditView.xaml">

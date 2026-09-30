@@ -147,6 +147,32 @@ namespace Lively.Common.Helpers
         }
 
         /// <summary>
+        /// Writes a single control value into an existing properties file. The value is applied with the
+        /// type of the given json value, the control entries themselves are never added or removed.
+        /// </summary>
+        /// <returns>True when the value was stored.</returns>
+        public static bool SetPropertyValue(string propertyPath, string key, string jsonValue)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(propertyPath) || string.IsNullOrWhiteSpace(key) || !File.Exists(propertyPath))
+                    return false;
+
+                var root = JObject.Parse(File.ReadAllText(propertyPath));
+                if (root[key] is not JObject control)
+                    return false;
+
+                control["value"] = JToken.Parse(jsonValue);
+                File.WriteAllText(propertyPath, root.ToString(Formatting.Indented));
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Creates the user editable copy of a properties file inside the given directory, or merges in the
         /// entries an existing copy is missing. Values already stored in the copy are never overwritten.
         /// </summary>

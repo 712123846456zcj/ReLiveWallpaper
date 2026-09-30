@@ -1,0 +1,80 @@
+{
+  "intensity": {
+    "type": "slider",
+    "min": 0.05,
+    "max": 3,
+    "step": 0.05,
+    "tick": 60,
+    "value": 1,
+    "text": "Density",
+    "help": "Amount of rain falling, affects streaks, droplets and ripples."
+  },
+  "speed": {
+    "type": "slider",
+    "min": 0.05,
+    "max": 4,
+    "step": 0.05,
+    "tick": 80,
+    "value": 1,
+    "text": "Fall speed",
+    "help": "How fast the rain falls."
+  },
+  "wind": {
+    "type": "slider",
+    "min": -1,
+    "max": 1,
+    "step": 0.02,
+    "tick": 50,
+    "value": 0.12,
+    "text": "Wind",
+    "help": "Slants the rain, negative values blow to the left."
+  },
+  "dropSize": {
+    "type": "slider",
+    "min": 0.4,
+    "max": 2.5,
+    "step": 0.05,
+    "tick": 50,
+    "value": 1,
+    "text": "Droplet size",
+    "help": "Scales the droplets resting on the screen and the impact ripples."
+  },
+  "opacity": {
+    "type": "slider",
+    "min": 0.05,
+    "max": 1,
+    "step": 0.05,
+    "tick": 20,
+    "value": 1,
+    "text": "Opacity",
+    "help": "Overall visibility of the effect."
+  },
+  "drops": {
+    "type": "checkbox",
+    "value": true,
+    "text": "Water droplets",
+    "help": "Droplets clinging to the screen."
+  },
+  "sliding": {
+    "type": "checkbox",
+    "value": true,
+    "text": "Sliding droplets",
+    "help": "Let bigger droplets run down and leave a trail."
+  },
+  "ripples": {
+    "type": "checkbox",
+    "value": true,
+    "text": "Impact ripples",
+    "help": "Ripples where the rain hits the screen."
+  },
+  "fps": {
+    "type": "slider",
+    "min": 5,
+    "max": 144,
+    "step": 1,
+    "tick": 144,
+    "value": 30,
+    "text": "Frame rate",
+    "help": "Rendering limit, lower it to save power."
+  }
+}

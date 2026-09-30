@@ -4,6 +4,7 @@
     {
         library,
         favorites,
+        effects,
         gallery,
         appupdate,
         settingsGeneral,

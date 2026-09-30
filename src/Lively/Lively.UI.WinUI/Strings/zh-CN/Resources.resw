@@ -1305,6 +1305,21 @@ Grid 网格：利用网格算法更精准地确定暂停时机</value>
   <data name="TitleFavorites" xml:space="preserve">
     <value>收藏</value>
   </data>
+  <data name="TitleEffects" xml:space="preserve">
+    <value>特效</value>
+  </data>
+  <data name="EffectRain.Text" xml:space="preserve">
+    <value>雨滴</value>
+  </data>
+  <data name="EffectSmoke.Text" xml:space="preserve">
+    <value>烟雾</value>
+  </data>
+  <data name="EffectSparks.Text" xml:space="preserve">
+    <value>星火</value>
+  </data>
+  <data name="EffectRestoreDefaultsText.Text" xml:space="preserve">
+    <value>还原默认设置</value>
+  </data>
   <data name="TextAllWallpapers" xml:space="preserve">
     <value>全部壁纸</value>
   </data>

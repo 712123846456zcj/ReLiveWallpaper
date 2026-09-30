@@ -1,0 +1,205 @@
+﻿<Page
+    x:Class="Lively.UI.WinUI.Views.Pages.EffectsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:behaviors="using:Lively.UI.WinUI.Behaviors"
+    xmlns:converters="using:Lively.UI.WinUI.Helpers.Converters"
+    xmlns:customControls="using:Lively.UI.WinUI.UserControls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:Lively.UI.WinUI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="rootPage"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <x:Double x:Key="TitleControlSpacing">10</x:Double>
+        <Thickness x:Key="MinControlMargin">0,0,0,15</Thickness>
+        <converters:BooleanToVisibilityConverter x:Key="VisibilityConverter" />
+        <converters:NullVisibilityConverter x:Key="NullVisibilityConverter" />
+        <!--  Templates  -->
+        <!--  label  -->
+        <DataTemplate x:Key="LabelTemplate">
+            <TextBlock
+                Margin="{StaticResource MinControlMargin}"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                FontSize="16"
+                FontWeight="SemiBold"
+                Text="{Binding Value}"
+                TextWrapping="Wrap"
+                ToolTipService.ToolTip="{Binding Help}" />
+        </DataTemplate>
+        <!--  slider  -->
+        <DataTemplate x:Key="SliderTemplate">
+            <Slider
+                Margin="0,0,0,5"
+                HorizontalAlignment="Stretch"
+                behaviors:SliderValueChangedBehavior.Command="{Binding DataContext.SliderValueChangedCommand, ElementName=rootPage}"
+                behaviors:SliderValueChangedBehavior.CommandParameter="{Binding}"
+                Header="{Binding Text, Mode=OneWay}"
+                Maximum="{Binding Max}"
+                Minimum="{Binding Min}"
+                StepFrequency="{Binding Step}"
+                ToolTipService.ToolTip="{Binding Help}"
+                Value="{Binding Value, Mode=TwoWay}" />
+        </DataTemplate>
+        <!--  textbox  -->
+        <DataTemplate x:Key="TextBoxTemplate">
+            <StackPanel
+                Margin="{StaticResource MinControlMargin}"
+                Spacing="{StaticResource TitleControlSpacing}"
+                ToolTipService.ToolTip="{Binding Help}">
+                <TextBlock Text="{Binding Text}" />
+                <TextBox
+                    MaxHeight="75"
+                    HorizontalAlignment="Stretch"
+                    behaviors:TextBoxTextChangedBehavior.Command="{Binding DataContext.TextboxValueChangedCommand, ElementName=rootPage}"
+                    behaviors:TextBoxTextChangedBehavior.CommandParameter="{Binding}"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                    Text="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </DataTemplate>
+        <!--  dropdown  -->
+        <DataTemplate x:Key="DropdownTemplate">
+            <ComboBox
+                Margin="{StaticResource MinControlMargin}"
+                HorizontalAlignment="Stretch"
+                behaviors:ComboBoxSelectionChangedBehavior.Command="{Binding DataContext.DropdownValueChangedCommand, ElementName=rootPage}"
+                behaviors:ComboBoxSelectionChangedBehavior.CommandParameter="{Binding}"
+                Header="{Binding Text}"
+                ItemsSource="{Binding Items}"
+                SelectedIndex="{Binding Value, Mode=TwoWay}"
+                ToolTipService.ToolTip="{Binding Help}" />
+        </DataTemplate>
+        <!--  checkbox  -->
+        <DataTemplate x:Key="CheckboxTemplate">
+            <CheckBox
+                Margin="0,0,0,10"
+                behaviors:CheckBoxCheckedChangedBehavior.Command="{Binding DataContext.CheckboxValueChangedCommand, ElementName=rootPage}"
+                behaviors:CheckBoxCheckedChangedBehavior.CommandParameter="{Binding}"
+                Content="{Binding Text}"
+                IsChecked="{Binding Value, Mode=TwoWay}"
+                ToolTipService.ToolTip="{Binding Help}" />
+        </DataTemplate>
+        <!--  colorpicker  -->
+        <DataTemplate x:Key="ColorPickerTemplate">
+            <StackPanel
+                Margin="{StaticResource MinControlMargin}"
+                Spacing="{StaticResource TitleControlSpacing}"
+                ToolTipService.ToolTip="{Binding Help}">
+                <TextBlock Text="{Binding Text}" />
+                <customControls:ColorPickerButton
+                    ColorChangedCommand="{Binding DataContext.ColorPickerValueChangedCommand, ElementName=rootPage}"
+                    CommandParameter="{Binding}"
+                    SelectedColor="{Binding Value, Mode=TwoWay}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <helpers:LivelyControlTemplateSelector
+            x:Key="ControlTemplateSelector"
+            ButtonTemplate="{StaticResource LabelTemplate}"
+            CheckboxTemplate="{StaticResource CheckboxTemplate}"
+            ColorPickerTemplate="{StaticResource ColorPickerTemplate}"
+            DropdownTemplate="{StaticResource DropdownTemplate}"
+            FolderDropdownTemplate="{StaticResource LabelTemplate}"
+            LabelTemplate="{StaticResource LabelTemplate}"
+            SliderTemplate="{StaticResource SliderTemplate}"
+            TextBoxTemplate="{StaticResource TextBoxTemplate}" />
+    </Page.Resources>
+
+    <Grid Padding="0,0,0,5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ScrollViewer
+            Grid.Row="0"
+            HorizontalScrollBarVisibility="Auto"
+            HorizontalScrollMode="Enabled"
+            VerticalScrollBarVisibility="Auto"
+            VerticalScrollMode="Enabled">
+            <ItemsControl Margin="15,20,15,10" ItemsSource="{Binding Effects}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="12" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border
+                            Width="340"
+                            Padding="16"
+                            VerticalAlignment="Top"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8">
+                            <StackPanel Spacing="12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon
+                                        VerticalAlignment="Center"
+                                        FontSize="20"
+                                        Glyph="{Binding Glyph}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Margin="10,0,0,0"
+                                        VerticalAlignment="Center"
+                                        FontSize="16"
+                                        FontWeight="SemiBold"
+                                        Text="{Binding Name}"
+                                        TextTrimming="CharacterEllipsis" />
+                                    <ToggleSwitch
+                                        Grid.Column="2"
+                                        MinWidth="0"
+                                        AutomationProperties.Name="{Binding Name}"
+                                        IsEnabled="{Binding IsAvailable}"
+                                        IsOn="{Binding IsEnabled, Mode=TwoWay}"
+                                        OffContent=""
+                                        OnContent="" />
+                                </Grid>
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    Margin="0,20,0,20"
+                                    Foreground="{ThemeResource SystemControlPageTextBaseMediumBrush}"
+                                    Text="{Binding ComingSoonText}"
+                                    Visibility="{Binding IsComingSoon, Mode=OneWay, Converter={StaticResource VisibilityConverter}}" />
+                                <ListView
+                                    Padding="0,0,5,0"
+                                    IsItemClickEnabled="False"
+                                    ItemTemplateSelector="{StaticResource ControlTemplateSelector}"
+                                    ItemsSource="{Binding Controls}"
+                                    SelectionMode="None"
+                                    Visibility="{Binding HasControls, Mode=OneWay, Converter={StaticResource VisibilityConverter}}" />
+                                <Button
+                                    HorizontalAlignment="Right"
+                                    Command="{Binding RestoreDefaultsCommand}"
+                                    Visibility="{Binding HasControls, Mode=OneWay, Converter={StaticResource VisibilityConverter}}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon FontSize="14" Glyph="&#xE777;" />
+                                        <TextBlock x:Uid="EffectRestoreDefaultsText" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <InfoBar
+            Grid.Row="1"
+            Margin="10,0,10,5"
+            IsClosable="False"
+            IsOpen="True"
+            Message="{Binding ErrorText, Mode=OneWay}"
+            Severity="Error"
+            Visibility="{Binding ErrorText, Mode=OneWay, Converter={StaticResource NullVisibilityConverter}}" />
+    </Grid>
+</Page>

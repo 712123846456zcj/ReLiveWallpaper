@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lively.Player.WebView2", "L
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lively.Player.Vlc", "Lively.Player.Vlc\Lively.Player.Vlc.csproj", "{62AF6652-6B8A-4A80-AF45-47BEEA335660}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lively.Player.Overlay", "Lively.Player.Overlay\Lively.Player.Overlay.csproj", "{A7C4E1B2-6D3F-4E28-9B51-2F8A0C7D4E19}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -329,6 +331,22 @@ Global
 		{62AF6652-6B8A-4A80-AF45-47BEEA335660}.Release|x64.Build.0 = Release|Any CPU
 		{62AF6652-6B8A-4A80-AF45-47BEEA335660}.Release|x86.ActiveCfg = Release|Any CPU
 		{62AF6652-6B8A-4A80-AF45-47BEEA335660}.Release|x86.Build.0 = Release|Any CPU
+		{A7C4E1B2-6D3F-4E28-9B51-2F8A0C7D4E19}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{A7C4E1B2-6D3F-4E28-9B51-2F8A0C7D4E19}.Debug|Any CPU.Build.0 = Debug|x64
+		{A7C4E1B2-6D3F-4E28-9B51-2F8A0C7D4E19}.Debug|arm64.ActiveCfg = Debug|x64
+		{A7C4E1B2-6D3F-4E28-9B51-2F8A0C7D4E19}.Debug|arm64.Build.0 = Debug|x64
+		{A7C4E1B2-6D3F-4E28-9B51-2F8A0C7D4E19}.Debug|x64.ActiveCfg = Debug|x64
+		{A7C4E1B2-6D3F-4E28-9B51-2F8A0C7D4E19}.Debug|x64.Build.0 = Debug|x64
+		{A7C4E1B2-6D3F-4E28-9B51-2F8A0C7D4E19}.Debug|x86.ActiveCfg = Debug|x64
+		{A7C4E1B2-6D3F-4E28-9B51-2F8A0C7D4E19}.Debug|x86.Build.0 = Debug|x64
+		{A7C4E1B2-6D3F-4E28-9B51-2F8A0C7D4E19}.Release|Any CPU.ActiveCfg = Release|x64
+		{A7C4E1B2-6D3F-4E28-9B51-2F8A0C7D4E19}.Release|Any CPU.Build.0 = Release|x64
+		{A7C4E1B2-6D3F-4E28-9B51-2F8A0C7D4E19}.Release|arm64.ActiveCfg = Release|x64
+		{A7C4E1B2-6D3F-4E28-9B51-2F8A0C7D4E19}.Release|arm64.Build.0 = Release|x64
+		{A7C4E1B2-6D3F-4E28-9B51-2F8A0C7D4E19}.Release|x64.ActiveCfg = Release|x64
+		{A7C4E1B2-6D3F-4E28-9B51-2F8A0C7D4E19}.Release|x64.Build.0 = Release|x64
+		{A7C4E1B2-6D3F-4E28-9B51-2F8A0C7D4E19}.Release|x86.ActiveCfg = Release|x64
+		{A7C4E1B2-6D3F-4E28-9B51-2F8A0C7D4E19}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

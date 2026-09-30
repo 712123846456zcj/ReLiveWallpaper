@@ -2,6 +2,7 @@
 using Lively.Models.Enums;
 using Lively.Models.Message;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
@@ -26,6 +27,10 @@ namespace Lively.Grpc.Client
         void SendMessageWallpaper(DisplayMonitor display, LibraryModel obj, IpcMessage msg);
         Task PreviewWallpaper(string livelyInfoPath);
         Task TakeScreenshot(string monitorId, string savePath);
+        Task<List<EffectInfo>> GetEffects();
+        Task SetEffect(string effectId, bool isEnabled);
+        Task SetEffectProperty(string effectId, string key, string value);
+        Task ResetEffectProperties(string effectId);
 
         event EventHandler WallpaperChanged;
         event EventHandler<Exception> WallpaperError;
@@ -39,6 +44,17 @@ namespace Lively.Grpc.Client
         public string PreviewPath { get; set; }
         public DisplayMonitor Display { get; set; }
         public WallpaperType Category { get; set; }
+    }
+
+    /// <summary>Desktop overlay effect, rendered on top of whatever wallpaper is running.</summary>
+    public class EffectInfo
+    {
+        public string Id { get; set; }
+        /// <summary>False for effects that are planned but not implemented yet.</summary>
+        public bool IsAvailable { get; set; }
+        public bool IsEnabled { get; set; }
+        /// <summary>User editable properties file, null when the effect is not available.</summary>
+        public string PropertyPath { get; set; }
     }
 
     public class WallpaperUpdatedData

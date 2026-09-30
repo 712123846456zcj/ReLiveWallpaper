@@ -43,6 +43,7 @@ namespace Lively.UI.WinUI.Services
             {
                 ContentPageType.library => typeof(LibraryView),
                 ContentPageType.favorites => typeof(FavoritesView),
+                ContentPageType.effects => typeof(EffectsView),
                 ContentPageType.gallery => typeof(GalleryView),
                 ContentPageType.appupdate => typeof(AppUpdateView),
                 ContentPageType.settingsGeneral => typeof(SettingsGeneralView),

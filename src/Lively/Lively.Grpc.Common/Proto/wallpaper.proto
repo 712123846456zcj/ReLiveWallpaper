@@ -18,6 +18,36 @@ service DesktopService {
   rpc TakeScreenshot(WallpaperScreenshotRequest) returns (google.protobuf.Empty);
   rpc EditWallpaper(EditWallpaperRequest) returns (EditWallpaperResponse);
   rpc CreateWallpaper(CreateWallpaperRequest) returns (CreateWallpaperResponse);
+  rpc GetEffects(google.protobuf.Empty) returns (GetEffectsResponse);
+  rpc SetEffect(SetEffectRequest) returns (google.protobuf.Empty);
+  rpc SetEffectProperty(SetEffectPropertyRequest) returns (google.protobuf.Empty);
+  rpc ResetEffectProperties(EffectRequest) returns (google.protobuf.Empty);
+}
+
+message GetEffectsResponse {
+	repeated EffectData effects = 1;
+}
+
+message EffectData {
+	string id = 1;
+	bool is_available = 2;
+	bool is_enabled = 3;
+	string property_path = 4;
+}
+
+message EffectRequest {
+	string effect_id = 1;
+}
+
+message SetEffectRequest {
+	string effect_id = 1;
+	bool is_enabled = 2;
+}
+
+message SetEffectPropertyRequest {
+	string effect_id = 1;
+	string key = 2;
+	string value = 3;
 }
 
 message EditWallpaperRequest {
