@@ -11,11 +11,19 @@ namespace Lively.UI.Shared.ViewModels
     /// </summary>
     public class LibraryFolderItemViewModel : ObservableObject
     {
+        /// <summary>
+        /// Number of wallpapers used for the tile preview, the count of a folder can be large.
+        /// </summary>
+        public const int MaxPreviewImages = 8;
+
+        private readonly List<string> previewImages = new();
+        private int previewIndex;
+
         private LibraryFolderItemViewModel(string name)
         {
             IsRoot = true;
             Name = name;
-            PlaceholderGlyph = "\uE8A9";
+            SetCoverPlaceholder("\uE8A9");
         }
 
         public LibraryFolderItemViewModel(LibraryFolderModel data)
@@ -53,47 +61,52 @@ namespace Lively.UI.Shared.ViewModels
         }
 
         /// <summary>
-        /// Single image covering the tile, set when a cover is picked or the folder holds one picture.
+        /// Image shown by the tile, alternates between the two slots like the Windows folder preview.
         /// </summary>
-        private string _coverImagePath;
-        public string CoverImagePath
+        private string _previewSlotA;
+        public string PreviewSlotA
         {
-            get => _coverImagePath;
-            private set => SetProperty(ref _coverImagePath, value);
+            get => _previewSlotA;
+            private set => SetProperty(ref _previewSlotA, value);
+        }
+
+        private string _previewSlotB;
+        public string PreviewSlotB
+        {
+            get => _previewSlotB;
+            private set => SetProperty(ref _previewSlotB, value);
         }
 
         /// <summary>
-        /// Images of the wallpapers contained, shown Windows folder style.
+        /// Slot opacity, the view animates between the two to cross fade the preview.
         /// </summary>
-        private IReadOnlyList<string> _coverImages = Array.Empty<string>();
-        public IReadOnlyList<string> CoverImages
+        private double _previewOpacityA = 1.0;
+        public double PreviewOpacityA
         {
-            get => _coverImages;
-            private set => SetProperty(ref _coverImages, value);
+            get => _previewOpacityA;
+            private set => SetProperty(ref _previewOpacityA, value);
         }
 
-        private bool _showCoverImage;
-        public bool ShowCoverImage
+        private double _previewOpacityB;
+        public double PreviewOpacityB
         {
-            get => _showCoverImage;
-            private set => SetProperty(ref _showCoverImage, value);
+            get => _previewOpacityB;
+            private set => SetProperty(ref _previewOpacityB, value);
         }
 
-        private bool _showCoverCollage;
-        public bool ShowCoverCollage
-        {
-            get => _showCoverCollage;
-            private set => SetProperty(ref _showCoverCollage, value);
-        }
+        /// <summary>
+        /// Whether the folder holds at least one wallpaper to preview.
+        /// </summary>
+        public bool ShowCoverImage => previewImages.Count != 0;
 
-        private bool _showCoverPlaceholder;
+        private bool _showCoverPlaceholder = true;
         public bool ShowCoverPlaceholder
         {
             get => _showCoverPlaceholder;
             private set => SetProperty(ref _showCoverPlaceholder, value);
         }
 
-        private string _placeholderGlyph;
+        private string _placeholderGlyph = "\uE8F4";
         public string PlaceholderGlyph
         {
             get => _placeholderGlyph;
@@ -101,34 +114,31 @@ namespace Lively.UI.Shared.ViewModels
         }
 
         /// <summary>
-        /// Shows a single image filling the tile.
+        /// Shows the given images, one at a time, the first one is displayed immediately.
         /// </summary>
-        public void SetCoverImage(string imagePath)
+        public void SetCoverImages(IReadOnlyList<string> imagePaths)
         {
-            CoverImagePath = imagePath;
-            CoverImages = Array.Empty<string>();
-            ShowCoverImage = !string.IsNullOrWhiteSpace(imagePath);
-            ShowCoverCollage = false;
-            ShowCoverPlaceholder = !ShowCoverImage;
+            previewImages.Clear();
+            for (int i = 0; i < imagePaths.Count && i < MaxPreviewImages; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(imagePaths[i]))
+                    previewImages.Add(imagePaths[i]);
+            }
+
+            previewIndex = 0;
+            PreviewSlotA = previewImages.Count != 0 ? previewImages[0] : null;
+            PreviewSlotB = null;
+            PreviewOpacityA = 1.0;
+            PreviewOpacityB = 0.0;
+            ShowCoverPlaceholder = previewImages.Count == 0;
+            OnPropertyChanged(nameof(ShowCoverImage));
         }
 
         /// <summary>
-        /// Shows the wallpaper images contained, up to four, Windows folder preview style.
+        /// Shows a single image filling the tile.
         /// </summary>
-        public void SetCoverCollage(IReadOnlyList<string> imagePaths)
-        {
-            if (imagePaths.Count == 1)
-            {
-                SetCoverImage(imagePaths[0]);
-                return;
-            }
-
-            CoverImagePath = null;
-            CoverImages = imagePaths;
-            ShowCoverImage = false;
-            ShowCoverCollage = imagePaths.Count > 1;
-            ShowCoverPlaceholder = imagePaths.Count == 0;
-        }
+        public void SetCoverImage(string imagePath) =>
+            SetCoverImages(string.IsNullOrWhiteSpace(imagePath) ? Array.Empty<string>() : new[] { imagePath });
 
         /// <summary>
         /// Shows a glyph when the folder holds nothing to preview.
@@ -136,11 +146,31 @@ namespace Lively.UI.Shared.ViewModels
         public void SetCoverPlaceholder(string glyph)
         {
             PlaceholderGlyph = glyph;
-            CoverImagePath = null;
-            CoverImages = Array.Empty<string>();
-            ShowCoverImage = false;
-            ShowCoverCollage = false;
-            ShowCoverPlaceholder = true;
+            SetCoverImages(Array.Empty<string>());
+        }
+
+        /// <summary>
+        /// Cycles to the next preview image, the change fades in over the previous one.
+        /// </summary>
+        public void AdvancePreview()
+        {
+            if (previewImages.Count < 2)
+                return;
+
+            previewIndex = (previewIndex + 1) % previewImages.Count;
+            // The transparent slot is loaded first, fading it in afterwards cross fades the two.
+            if (PreviewOpacityA > PreviewOpacityB)
+            {
+                PreviewSlotB = previewImages[previewIndex];
+                PreviewOpacityB = 1.0;
+                PreviewOpacityA = 0.0;
+            }
+            else
+            {
+                PreviewSlotA = previewImages[previewIndex];
+                PreviewOpacityA = 1.0;
+                PreviewOpacityB = 0.0;
+            }
         }
 
         public override string ToString() => Name;

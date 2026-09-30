@@ -4,6 +4,7 @@ using Lively.Models;
 using Lively.Models.Enums;
 using Lively.UI.Shared.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -19,6 +20,10 @@ namespace Lively.UI.WinUI.Views.Pages
     public sealed partial class LibraryView : Page
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+        /// <summary>
+        /// Drives the folder tile previews, a single timer for the whole folder strip.
+        /// </summary>
+        private readonly DispatcherQueueTimer folderPreviewTimer;
         private LibraryModel selectedTile;
         private LibraryFolderItemViewModel selectedFolderTile;
 
@@ -40,6 +45,14 @@ namespace Lively.UI.WinUI.Views.Pages
 
             this.InitializeComponent();
             this.DataContext = libraryVm;
+
+            folderPreviewTimer = DispatcherQueue.CreateTimer();
+            folderPreviewTimer.Interval = TimeSpan.FromSeconds(2.5);
+            folderPreviewTimer.IsRepeating = true;
+            folderPreviewTimer.Tick += (s, e) => libraryVm.AdvanceFolderPreviews();
+            // Only preview while the page is on screen.
+            this.Loaded += (s, e) => folderPreviewTimer.Start();
+            this.Unloaded += (s, e) => folderPreviewTimer.Stop();
         }
 
         #region library
@@ -176,7 +189,7 @@ namespace Lively.UI.WinUI.Views.Pages
 
             var newFolder = new MenuFlyoutItem()
             {
-                Text = i18n.GetString("NewFolder.Text"),
+                Text = i18n.GetString("NewFolder/Text"),
                 Icon = new FontIcon() { Glyph = "\uE8F4" },
             };
             newFolder.Click += NewFolderWithWallpaper_Click;
@@ -251,7 +264,7 @@ namespace Lively.UI.WinUI.Views.Pages
                     break;
                 case "deleteFolder":
                     {
-                        var message = string.Format(i18n.GetString("DeleteFolderConfirm.Text"), folder.Name);
+                        var message = string.Format(i18n.GetString("DeleteFolderConfirm/Text"), folder.Name);
                         if (!await dialogService.ShowConfirmationDialogAsync(message))
                             return;
 

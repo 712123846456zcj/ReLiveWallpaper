@@ -386,6 +386,15 @@ namespace Lively.UI.Shared.ViewModels
         }
 
         /// <summary>
+        /// Cycles the folder tile previews, driven by the view.
+        /// </summary>
+        public void AdvanceFolderPreviews()
+        {
+            foreach (var folder in FolderItems)
+                folder.AdvancePreview();
+        }
+
+        /// <summary>
         /// Applies the folder and search criteria to the library view.
         /// </summary>
         public void ApplyFilters()
@@ -503,13 +512,13 @@ namespace Lively.UI.Shared.ViewModels
                     .Select(x => x.ThumbnailPath)
                     .Where(x => !string.IsNullOrWhiteSpace(x) && File.Exists(x))
                     .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .Take(4)
+                    .Take(LibraryFolderItemViewModel.MaxPreviewImages)
                     .ToList();
 
                 if (images.Count == 0)
                     folder.SetCoverPlaceholder("\uE8F4");
                 else
-                    folder.SetCoverCollage(images);
+                    folder.SetCoverImages(images);
             }
         }
 

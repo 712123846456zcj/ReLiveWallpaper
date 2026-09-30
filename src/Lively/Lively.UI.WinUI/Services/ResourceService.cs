@@ -23,7 +23,16 @@ namespace Lively.UI.WinUI.Services
 
         public string GetString(string resource)
         {
-            return resourceLoader?.GetString(resource);
+            if (resourceLoader is null)
+                return null;
+
+            var value = resourceLoader.GetString(resource);
+            // .resw keys use the x:Uid "Name.Property" convention, the resource map exposes them
+            // slash separated - a dotted name resolves to an empty string without raising an error.
+            if (string.IsNullOrEmpty(value) && resource.Contains('.'))
+                return resourceLoader.GetString(resource.Replace('.', '/'));
+
+            return value;
         }
 
         public string GetString(WallpaperType type)

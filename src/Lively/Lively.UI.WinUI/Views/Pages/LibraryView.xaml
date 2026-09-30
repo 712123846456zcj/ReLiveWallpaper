@@ -123,30 +123,27 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <!--  Cover image, picked by the user or taken from the wallpapers contained.  -->
+                        <!--  Cover, picked by the user or taken from the wallpapers contained.  -->
+                        <!--  The wallpapers are previewed one at a time, Windows folder tile style.  -->
                         <Grid
                             Background="{ThemeResource SystemAltLowColor}"
                             CornerRadius="5">
                             <Image
-                                Source="{Binding CoverImagePath}"
-                                Stretch="UniformToFill"
-                                Visibility="{Binding ShowCoverImage, Converter={StaticResource VisibilityConverter}}" />
-                            <ItemsRepeater
-                                ItemsSource="{Binding CoverImages}"
-                                Visibility="{Binding ShowCoverCollage, Converter={StaticResource VisibilityConverter}}">
-                                <ItemsRepeater.Layout>
-                                    <UniformGridLayout
-                                        ItemsStretch="Fill"
-                                        MaximumRowsOrColumns="2"
-                                        MinColumnSpacing="2"
-                                        MinRowSpacing="2" />
-                                </ItemsRepeater.Layout>
-                                <ItemsRepeater.ItemTemplate>
-                                    <DataTemplate>
-                                        <Image Source="{Binding}" Stretch="UniformToFill" />
-                                    </DataTemplate>
-                                </ItemsRepeater.ItemTemplate>
-                            </ItemsRepeater>
+                                Opacity="{Binding PreviewOpacityA}"
+                                Source="{Binding PreviewSlotA}"
+                                Stretch="UniformToFill">
+                                <Image.OpacityTransition>
+                                    <ScalarTransition Duration="0:0:0.5" />
+                                </Image.OpacityTransition>
+                            </Image>
+                            <Image
+                                Opacity="{Binding PreviewOpacityB}"
+                                Source="{Binding PreviewSlotB}"
+                                Stretch="UniformToFill">
+                                <Image.OpacityTransition>
+                                    <ScalarTransition Duration="0:0:0.5" />
+                                </Image.OpacityTransition>
+                            </Image>
                             <FontIcon
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
